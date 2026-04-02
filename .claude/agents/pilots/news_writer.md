@@ -10,18 +10,45 @@
 
 ## タスク
 
-### Level 1: 素材受け取り
+### Level 1: 指示の受け取り・ブリーフィング確認
+生成部隊長から指示を受け取る。
+以下を必ず確認してから生成を開始する。
+
+```
+確認項目：
+□ 今週のRIDO方向性（briefing.rido_direction.message）
+□ 今日のトーン指示（task.tone_guidance）
+□ 自分の注意点（pilot_context.watch_points）
+□ 良い例・悪い例（pilot_context.good_example / bad_example）
+□ 優先ジャンル・抑制ジャンル（task.priority_genre / suppress_genre）
+□ 目標件数（task.target_count）
+```
+
+注意点がある場合は生成前に自分に言い聞かせる：
+「今週は命令調に特に注意する。〜してくださいは書かない。」
+
+### Level 2: 素材受け取り
 生成部隊長からnews_rawのデータを受け取る。
 source_type = 'external_rss'のみ処理する。
 
-### Level 2: ジャンル判定
+### Level 3: ジャンル判定
 categories.mdのバイクニュース定義に従いジャンルを判定する。
+priority_genreを優先して処理する。
 
-### Level 3: 記事生成
+### Level 4: 記事生成
 rido_tone.mdのカテゴリ別温度設定に従い生成する。
-バイクニュースの温度：フラット50% / 俺50%
+指示のtone_guidanceを優先する。
 
-### Level 4: JSON出力
+生成前チェックリスト：
+```
+□ 命令調（〜してください・〜しましょう）が入っていないか
+□ ランキング表現が入っていないか
+□ 感嘆符が3個以内か
+□ 締めの定型文が入っていないか
+□ 原文の20%以上をそのまま使っていないか
+```
+
+### Level 5: JSON出力
 ```json
 {
   "title": "見出し（30字以内）",
@@ -41,6 +68,11 @@ rido_tone.mdのカテゴリ別温度設定に従い生成する。
       "heading": "ポイント2",
       "body": "段落テキスト（200字以内）",
       "quoted_comment": null
+    },
+    {
+      "heading": "ポイント3",
+      "body": "段落テキスト（200字以内）",
+      "quoted_comment": null
     }
   ],
   "navigation": {
@@ -52,12 +84,13 @@ rido_tone.mdのカテゴリ別温度設定に従い生成する。
   "genre": "new_model",
   "tags": ["Honda", "新車", "400cc"],
   "tone_score": 4,
+  "tone_notes": "命令調なし・感嘆符2個",
   "content_type": "external_rss",
   "source_name": "Web Young Machine"
 }
 ```
 
-### Level 5: 実行結果を部隊長に報告・status-board.md更新
+### Level 6: 実行結果を部隊長に報告・status-board.md更新
 
 ## ルール
 - sections は3〜5つ
@@ -65,4 +98,4 @@ rido_tone.mdのカテゴリ別温度設定に従い生成する。
 - source_urlは必須
 - quoted_commentは基本null
 - 原文を20%以上そのまま使わない
-- tone_scoreを自分で5にしない
+- tone_scoreは正直につける・過大評価しない

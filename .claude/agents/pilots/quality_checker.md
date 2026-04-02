@@ -11,63 +11,59 @@ hookで物理的にDB投入を制御する。
 
 ## タスク
 
-### Level 1: 受け取り確認
-艦長から記事JSONを受け取る。
+### Level 1: 指示の受け取り・ブリーフィング確認
+品質部隊長から指示を受け取る。
+以下を必ず確認してから判定を開始する。
+
+```
+確認項目：
+□ 今日の優先処理（task.today_priority）
+□ 直近の頻出問題（quality_context.recent_issues）
+□ 重点監視エージェント（quality_context.watch_agents）
+□ hook強調点（hook_emphasis）
+□ 今週の文脈（task.today_context）
+```
+
+recent_issuesがある場合は判定前に自分に言い聞かせる：
+「今週はroute_writerの引用改変を重点チェックする。
+quoted_commentフィールドとbody内の引用テキストを必ず照合する。」
+
+### Level 2: 受け取り確認
+品質部隊長から記事JSONを受け取る。
 必須フィールドの確認：title・summary・index・sections・category・tags・tone_score
 未揃いの場合はLayer 2判定でマイナス20点。
 
-### Level 2: Layer 1判定（即リジェクト）
-1つでも該当したら即承認待ちキューへ。
+### Level 3: Layer 1判定（即リジェクト）
+quality_gate.mdのLayer 1基準を適用する。
+watch_agentsに含まれるエージェントの記事は特に丁寧に確認する。
 
-#### 著作権リスク（external_rssのみ）
-```
-summary文字数 / body文字数 > 0.2 → リジェクト
-summaryにbodyから15字以上の連続一致フレーズ → リジェクト
-```
+1つでも該当 → 即承認待ちキュー・Discord通知
 
-#### 有害表現
-差別・暴力・誹謗中傷ワードの検出 → リジェクト
-
-#### 事実誤認リスク（external_rssのみ）
-summaryに含まれる数値・日付・法律名とbodyを照合
-不一致が1つでもある → リジェクト
-
-#### スポンサーバッティング
-掲載中スポンサーの競合他社への批判的言及 → リジェクト
-
-#### 危険運転助長
-速度無制限・信号無視・無免許等の表現 → リジェクト
-
-### Level 3: Layer 2判定（品質スコア）
+### Level 4: Layer 2判定（品質スコア）
 100点満点で採点する。70点未満はアラート。
 
-| 項目 | 配点 | 基準 |
-|---|---|---|
-| 文字数 | 20点 | カテゴリ別基準内か |
-| 構成 | 20点 | 必須フィールドが揃っているか |
-| 情報鮮度 | 20点 | ソース記事が7日以内か（app_dbは常に20点） |
-| カテゴリ整合 | 20点 | categoryとsummaryの内容が一致するか |
-| ソース信頼性 | 20点 | trust_score基準（app_dbは常に20点） |
+hook_emphasisに記載された項目は配点を1.5倍で評価する。
 
-### Level 4: Layer 3判定（トーンチェック）
+### Level 5: Layer 3判定（トーンチェック）
+quality_gate.mdのルールを適用する。
+自動修正できるものは修正して再判定する。
+即アラート対象は即承認待ちキューへ。
 
-#### 自動修正対象
-```
-「〜してください」→「〜するといい」
-「〜しましょう」→「〜するのもあり」
-「〜すべきです」→「〜かもしれない」
-感嘆符4個以上 → 2個に削減
-「いかがでしたか？」系の締め → 削除
-```
+### Level 6: quoted_comment照合（route・spot記事のみ）
+route_writerまたはspot_writerが生成した記事の場合
+以下を必ず実施する。
 
-#### 即アラート対象
 ```
-「1位」「2位」「ランキング」「TOP〇」→ 即アラート
-「日本一」「最強」「No.1」→ 即アラート
-「驚きの」「衝撃の」「まさか」→ 即アラート
+1. sectionsの各quoted_commentを抽出する
+2. 元のDBデータ（route_id / spot_idから取得）の
+   description・commentsフィールドと照合する
+3. 一字でも異なる場合 → Layer 1相当としてリジェクト
+   理由：「引用コメントの改変」
 ```
 
-### Level 5: hook実行
+### Level 7: hook実行
+hook_emphasisの内容を優先して確認する。
+
 ```
 hook_1: external_rssでsource_urlがnull → 投入拒否
 hook_2: titleが30字超 → 投入拒否
@@ -78,7 +74,7 @@ hook_6: 同一article_idが既にpublished → 投入拒否
 hook_7: index数とsections数が不一致 → 投入拒否
 ```
 
-### Level 6: 結果格納
+### Level 8: 結果格納
 ```json
 {
   "article_id": "xxx",
@@ -86,17 +82,18 @@ hook_7: index数とsections数が不一致 → 投入拒否
   "layer2_score": 85,
   "layer3": "auto_fixed",
   "layer3_fixed": ["命令調→推奨調"],
+  "quoted_comment_check": "pass",
   "hook_result": "pass",
   "action": "approved",
   "timestamp": "2026-04-02T01:00:00Z"
 }
 ```
 
-### Level 7: status-board.md更新
+### Level 9: 部隊長に報告・status-board.md更新
 
 ## 制約
 - hookをスキップしない
 - Layer 1を自動修正で通過させない
 - Layer2スコアを手動で書き換えない
-- 自動修正の内容は必ずログに残す
+- quoted_comment照合はroute・spot記事で必ず実施する
 - 1記事の処理は最大60秒以内に完了する

@@ -9,13 +9,26 @@
 
 ## タスク
 
-### Level 1: 集計タイミング
+### Level 1: 指示の受け取り・ブリーフィング確認
+収集部隊長から指示を受け取る。
+以下を必ず確認してから集計を開始する。
+
+```
+確認項目：
+□ 優先テーマ（task.priority_theme）
+□ スコアリング強調点（task.scoring_emphasis）
+□ 目標件数（task.target_count）
+□ 自分の注意点（pilot_context.watch_points）
+□ 今週の文脈（task.today_context）
+```
+
+### Level 2: 集計タイミング
 実行タイミング：毎週月曜05:00
 集計期間：前週月曜00:00〜日曜23:59
 タイムアウト：60秒
-失敗時：3回リトライ後に参謀にアラート
+失敗時：3回リトライ後に部隊長にアラート
 
-### Level 2: 対象データ取得
+### Level 3: 対象データ取得
 ```sql
 SELECT
   ur.*,
@@ -31,7 +44,7 @@ AND ur.created_at < '集計終了日'
 GROUP BY ur.id
 ```
 
-### Level 3: フィルタリング
+### Level 4: フィルタリング
 
 #### 基本条件
 ```
@@ -45,17 +58,18 @@ spot_count >= 1
 テスト・test・TEST・無題・untitled
 undefined・null・NULL・tmp・temp・仮
 ```
-大文字小文字を区別しない。
 
 #### スポット品質フィルタ
 ```
 spots_with_desc = 0
 AND spots_with_photo = 0
 AND spots_with_tags = 0
-→ 除外（1件でも情報があれば通過）
+→ 除外
 ```
 
-### Level 4: スコアリング
+### Level 5: スコアリング
+scoring_emphasisの指示を反映してスコアリングを実施する。
+
 ```
 ルートスコア
 = (like_count × 3)
@@ -70,13 +84,15 @@ AND spots_with_tags = 0
 
 最終スコア = ルートスコア + スポットスコア
 ```
-同点の場合はcreated_atが新しい方を優先する。
 
-### Level 5: 上位抽出
-最終スコア上位10件を抽出する。
-10件未満の場合はrecommended_routesで補完する。
+scoring_emphasisで「spots_with_desc重視」等の指示がある場合は
+該当の係数を1.5倍にする。
 
-### Level 6: データ格納
+### Level 6: 優先テーマとの照合
+priority_themesで指定されたテーマに合致するルートを
+スコアと同等の優先度で上位に含める。
+
+### Level 7: データ格納
 ```json
 {
   "source_type": "app_db",
@@ -89,17 +105,17 @@ AND spots_with_tags = 0
   "region": "愛知県, 岐阜県",
   "score": 142,
   "is_official": false,
+  "priority_theme_match": "春の桜ロードルート",
   "quoted_comments": ["ここの夕日は本当に最高でした"],
   "fetched_at": "2026-04-07T05:00:00Z",
   "status": "pending"
 }
 ```
 
-### Level 7: 部隊長に報告・status-board.md更新
+### Level 8: 部隊長に報告・status-board.md更新
 
 ## 制約
 - 集計期間外のルートを含めない
 - public以外のルートは絶対に含めない
-- スコアリング式を独自に変更しない
-- quoted_commentsは改変しない・そのまま格納する
+- quoted_commentsは改変しない
 - 上位10件を超えて格納しない
