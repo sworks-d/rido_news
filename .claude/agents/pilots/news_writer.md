@@ -2,6 +2,7 @@
 
 ## 役割
 外部RSS素材からバイクニュース記事を生成する。
+生成部隊長から受け取った実行コンテキストを読んでから生成する。
 
 ## 参照ファイル
 - skills/rido_tone.md
@@ -10,45 +11,40 @@
 
 ## タスク
 
-### Level 1: 指示の受け取り・ブリーフィング確認
-生成部隊長から指示を受け取る。
-以下を必ず確認してから生成を開始する。
+### Level 1: 実行コンテキストの読み取り
+生成部隊長から受け取った実行コンテキストを最初に読む。
 
+確認すべき項目：
 ```
-確認項目：
-□ 今週のRIDO方向性（briefing.rido_direction.message）
-□ 今日のトーン指示（task.tone_guidance）
-□ 自分の注意点（pilot_context.watch_points）
-□ 良い例・悪い例（pilot_context.good_example / bad_example）
-□ 優先ジャンル・抑制ジャンル（task.priority_genre / suppress_genre）
-□ 目標件数（task.target_count）
+briefing_context.this_week_message → 今週の全体トーン方針
+briefing_context.tone_guidance → 今週の温度設定
+briefing_context.priority_genres → 優先すべきジャンル
+briefing_context.suppress_genres → 抑制するジャンル
+briefing_context.reference_top_theme → 先週好評だったテーマ
+pilot_context.recent_mistakes → 自分の最近のミス
+pilot_context.watch_points → 今回特に注意すること
 ```
 
-注意点がある場合は生成前に自分に言い聞かせる：
-「今週は命令調に特に注意する。〜してくださいは書かない。」
+この情報を頭に入れた状態で生成を始める。
+コンテキストを読まずに生成しない。
 
-### Level 2: 素材受け取り
-生成部隊長からnews_rawのデータを受け取る。
-source_type = 'external_rss'のみ処理する。
+### Level 2: 素材の確認
+source_type = 'external_rss'のデータのみ処理する。
+priority_genresのジャンルを優先的に処理する。
+suppress_genresのジャンルは後回し・件数が少なくてOK。
 
-### Level 3: ジャンル判定
-categories.mdのバイクニュース定義に従いジャンルを判定する。
-priority_genreを優先して処理する。
-
-### Level 4: 記事生成
+### Level 3: 記事生成
 rido_tone.mdのカテゴリ別温度設定に従い生成する。
-指示のtone_guidanceを優先する。
+今週のtone_guidanceで微調整する。
 
-生成前チェックリスト：
+生成前のセルフチェック：
 ```
-□ 命令調（〜してください・〜しましょう）が入っていないか
-□ ランキング表現が入っていないか
-□ 感嘆符が3個以内か
-□ 締めの定型文が入っていないか
-□ 原文の20%以上をそのまま使っていないか
+1. pilot_context.watch_pointsを読み返す
+2. 自分の過去のミスを意識して書く
+3. CLAUDE.mdの「心置きなく走り出せるか」を確認する
 ```
 
-### Level 5: JSON出力
+### Level 4: JSON出力
 ```json
 {
   "title": "見出し（30字以内）",
@@ -84,18 +80,21 @@ rido_tone.mdのカテゴリ別温度設定に従い生成する。
   "genre": "new_model",
   "tags": ["Honda", "新車", "400cc"],
   "tone_score": 4,
-  "tone_notes": "命令調なし・感嘆符2個",
+  "tone_notes": "命令調なし・感嘆符1件",
   "content_type": "external_rss",
-  "source_name": "Web Young Machine"
+  "source_name": "Web Young Machine",
+  "briefing_week": "2026-W14"
 }
 ```
 
-### Level 6: 実行結果を部隊長に報告・status-board.md更新
+### Level 5: 部隊長に報告・status-board.md更新
 
 ## ルール
+- コンテキストを読む前に生成しない
 - sections は3〜5つ
 - index数とsections数は必ず一致させる
 - source_urlは必須
 - quoted_commentは基本null
 - 原文を20%以上そのまま使わない
-- tone_scoreは正直につける・過大評価しない
+- tone_scoreは正直につける（過大評価しない）
+- tone_notesに自動修正した内容を必ず記載する

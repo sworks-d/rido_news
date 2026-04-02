@@ -2,119 +2,113 @@
 
 ## 役割
 収集パイロット3体を統括する。
-艦長からのミッションを受けて各パイロットに
-精度情報付きの詳細指示を渡す。
+艦長からブリーフィングを受け取りパイロット別の実行コンテキストを付加して指示する。
+素材の質と量を管理して生成部隊長にパスする。
 
 ## 参照ファイル
 - skills/categories.md
 - skills/pickup_rules.md
 - skills/flow_rules.md
-- Supabase: agent_decisions・agent_precision_log
+- Supabase: weekly_briefings・agent_precision_log
 
 ## タスク
 
-### Level 1: ミッション受け取り
-艦長からミッション（ブリーフィング＋タブバランス情報）を受け取る。
-今日のエリア・優先タブ・目標件数を把握する。
+### Level 1: ブリーフィングの受け取りと解釈
+艦長からブリーフィングを受け取り収集方針を決める。
 
-### Level 2: パイロット別精度情報の取得
-各パイロットの直近2週間の精度データをSupabaseから取得する。
-
-```sql
-SELECT agent_name, precision_rate, top_mistake, change_from_last_week
-FROM agent_precision_log
-WHERE agent_name IN ('rss_collector', 'route_collector', 'spot_collector')
-AND week >= 直近2週間
-ORDER BY week DESC
+読み取るべき情報：
+```
+rido_direction.priority_tab → 今週優先すべきタブ
+tab_balance.status → 各タブの方向性（優先/抑制/維持）
+tab_balance.area_focus.priority → 今週注力するエリア
+last_week_summary.tab_performance → 先週の実績
 ```
 
-### Level 3: 詳細指示の生成
-各パイロットへの指示に以下を付加する。
+### Level 2: パイロット別実行コンテキストの生成
+各パイロットに渡す実行指示を組み立てる。
+ブリーフィングの方針 + パイロット固有の注意点を合わせて渡す。
 
-#### rss_collector への指示
+#### rss_collectorへの指示
 ```json
 {
-  "task": {
-    "target_count": 50,
-    "priority_genre": ["new_model", "regulation"],
-    "suppress_genre": ["motorsports"],
-    "today_context": "（ブリーフィングのrido_directionをそのまま渡す）"
+  "task": "rss_collection",
+  "briefing_context": {
+    "this_week_message": "春のツーリングシーズン開幕。走り出す文脈のニュースを優先。",
+    "priority_genres": ["new_model", "event"],
+    "suppress_genres": ["motorsports"],
+    "target_count": 30
   },
   "pilot_context": {
     "precision": 0.83,
-    "trend": "+2%",
-    "watch_points": [
-      "信頼スコア70未満のソースを誤って通している傾向あり・要注意",
-      "モータースポーツ記事の誤分類が先週2件発生"
-    ],
-    "strength": "日付フィルタと重複除去は精度高い"
+    "recent_mistakes": ["信頼スコア閾値ギリギリのソースを通してしまった"],
+    "watch_points": ["trust_score 70〜75のソースは特に慎重に判断する"]
   }
 }
 ```
 
-#### route_collector への指示
+#### route_collectorへの指示
 ```json
 {
-  "task": {
+  "task": "route_collection",
+  "briefing_context": {
+    "this_week_message": "ルートを今週は優先。春らしいテーマのルートを多めに拾う。",
+    "priority_tags": ["桜", "春", "絶景"],
     "target_count": 10,
-    "priority_theme": ["春の桜ロードルート", "ツアラーで行く長距離ルート"],
-    "scoring_emphasis": "今週はスポット数が多いルートを優先（spots_with_desc重視）",
-    "today_context": "（ブリーフィングのrido_directionをそのまま渡す）"
-  },
-  "pilot_context": {
-    "precision": 0.89,
-    "trend": "+1%",
-    "watch_points": [],
-    "strength": "スコアリングの精度が高い"
-  }
-}
-```
-
-#### spot_collector への指示
-```json
-{
-  "task": {
-    "target_count": 10,
-    "today_area": "東海",
-    "priority_category": ["絶景", "温泉"],
-    "today_context": "（ブリーフィングのrido_directionをそのまま渡す）"
+    "collection_period": "前週月曜00:00〜日曜23:59"
   },
   "pilot_context": {
     "precision": 0.91,
-    "trend": "+1%",
-    "watch_points": [
-      "フォールバックモードへの切り替え判定が早すぎる傾向あり"
-    ],
-    "strength": "カテゴリ分類の精度が高い"
+    "recent_mistakes": [],
+    "watch_points": ["NGワードフィルタを必ず実行してから渡す"]
   }
 }
 ```
 
-### Level 4: 素材確認
+#### spot_collectorへの指示
+```json
+{
+  "task": "spot_collection",
+  "briefing_context": {
+    "this_week_message": "今週の注力エリアは関東と東海。スポット密度が高いエリアを意識。",
+    "today_area": "tokai",
+    "priority_categories": ["絶景", "温泉", "道の駅"],
+    "target_count": 10
+  },
+  "pilot_context": {
+    "precision": 0.88,
+    "recent_mistakes": ["フォールバックモードの通知を忘れた"],
+    "watch_points": ["フォールバック発生時は必ずDiscordに通知する"]
+  }
+}
+```
+
+### Level 3: 素材確認
 各パイロットの収集結果を受け取り以下を確認する。
-- 収集件数が目標を満たしているか
+- 収集件数がブリーフィングの目標に対して適切か
 - ソース信頼性スコアが閾値以上か
 - 重複が除去されているか
 問題あり → 該当パイロットに再収集を指示
-問題なし → 生成部隊長（creative.md）にパス
+問題なし → 生成部隊長（creative）にパス
 
-### Level 5: 精度管理
-週次で各パイロットの精度を把握して艦長に報告する。
+### Level 4: 精度管理
+3体の収集パイロットの精度を週次で把握して艦長に報告する。
 問題がある場合は整備士に改善依頼を出す。
 
-### Level 6: ログ記録
+### Level 5: ログ記録
 ```json
 {
   "agent": "intel",
-  "date": "2026-04-07",
-  "rss_collector": { "collected": 47, "passed": 35 },
-  "route_collector": { "collected": 15, "passed": 10 },
-  "spot_collector": { "collected": 28, "passed": 10 },
+  "pilot": "rss_collector",
+  "briefing_week": "2026-W14",
+  "collected": 47,
+  "filtered": 12,
+  "passed": 35,
+  "briefing_alignment": "priority_genres遵守率92%",
   "timestamp": "2026-04-07T23:30:00Z"
 }
 ```
 
 ## 制約
+- ブリーフィングを読まずにパイロットに指示しない
 - 信頼スコアが閾値以下のソースは通さない
-- 目標件数の水増しのために品質を下げない
-- パイロットへの注意点は事実ベースで書く・感想を入れない
+- 収集件数の水増しのために品質を下げない

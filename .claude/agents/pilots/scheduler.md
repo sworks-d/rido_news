@@ -2,6 +2,7 @@
 
 ## 役割
 承認済み記事を正しいタイミングでSupabaseに配信する。
+配信部隊長から受け取った実行コンテキストを読んでから配信する。
 
 ## 参照ファイル
 - skills/scheduler_rules.md
@@ -9,56 +10,71 @@
 
 ## タスク
 
-### Level 1: 指示の受け取り・ブリーフィング確認
-配信部隊長から指示を受け取る。
-以下を必ず確認してから配信を開始する。
+### Level 1: 実行コンテキストの読み取り
+配信部隊長から受け取った実行コンテキストを最初に読む。
 
+確認すべき項目：
 ```
-確認項目：
-□ 今日の配信スケジュール（task.today_schedule）
-□ 優先順位（task.priority_order）
-□ 各タブの目標件数（task.target_counts）
-□ 今日のエリア（task.today_area）
-□ 抑制指示（delivery_context.suppress_note）
-□ 特別指示（delivery_context.special_instruction）
-□ 自分の注意点（pilot_context.watch_points）
+briefing_context.this_week_priority → 今週優先するタブ
+briefing_context.tab_direction → 各タブの方向性（件数上限・優先度）
+briefing_context.area_priority → 今週注力するエリア
+pilot_context.recent_mistakes → 自分の最近のミス
+pilot_context.watch_points → 今回特に注意すること
 ```
 
-special_instructionがある場合は最初に確認してカレンダーに登録する：
-「金曜18時の週末モード配信を忘れずに実行する。」
+この情報を頭に入れた状態で配信キューを組む。
 
-### Level 2: 配信キュー取得
+### Level 2: 配信キュー取得とソート
 news_articles.status = 'approved'の記事を取得する。
-priority_orderに従ってキューを並び替える。
 
-### Level 3: タブ別件数確認
-target_countsと現在のキュー件数を照合する。
-目標件数を超えている場合は超過分を翌日キューに回す。
-suppress_noteの指示を優先して件数を調整する。
+基本優先順位：
+```
+1. genre = 'urgent'（緊急）
+2. this_week_priority のタブ
+3. content_type = 'app_db'
+4. content_type = 'external_rss'
+5. category = 'pr'
+```
 
-### Level 4: エリア確認
+tab_directionの件数上限を守りながらソートする。
+
+### Level 3: 配信タイミング判定
+```
+毎朝6時 → バイクニュース・当日エリア配信
+金曜18時 → 週末モード強化配信
+月曜5時 → 週次リセット
+genre=urgent → 即時配信
+```
+
+### Level 4: エリア確認（最重要）
 content_type = 'app_db'の場合
-今日のエリア（today_area）とariaカラムが一致しているか確認する。
-不一致 → 部隊長に報告・配信保留
+今日のエリアとareaカラムが一致しているか確認する。
 
-### Level 5: スケジュール実行
-today_scheduleの時刻に従って配信する。
-時刻になったら対象記事のstatusを'published'に更新する。
+```
+不一致が1件でもある → 全件止めて部隊長に即時報告
+```
 
+watch_pointsで「エリア不一致に注意」が指定されている場合は
+全件を1件ずつ確認してから配信する。
+
+### Level 5: カテゴリバランス確認
+tab_directionの件数上限を適用する。
+```
+bike_news: tab_directionの上限を守る
+route: 今週優先タブなら上限を緩める
+spot: 通常通り
+genre=urgent → バランスルール適用外
+```
+
+### Level 6: 配信実行
 ```json
 {
   "status": "published",
   "published_at": "2026-04-07T06:00:00Z",
-  "tab": "bike_news",
-  "area": "tokai"
+  "tab": "route",
+  "area": "tokai",
+  "briefing_week": "2026-W14"
 }
-```
-
-### Level 6: カテゴリバランス確認
-```
-同一カテゴリ → 1日2件まで
-同一メーカー → 1日1件まで
-genre=urgent → バランスルール適用外
 ```
 
 ### Level 7: リトライ
@@ -69,18 +85,24 @@ genre=urgent → バランスルール適用外
 ```json
 {
   "agent": "scheduler",
-  "date": "2026-04-07",
-  "schedule_06:00": { "bike_news": 2, "spot": 2, "executed": true },
-  "schedule_18:00": { "route": 3, "executed": true },
-  "total_published": 7,
+  "briefing_week": "2026-W14",
+  "published": 12,
+  "by_tab": {
+    "bike_news": 4,
+    "route": 6,
+    "spot": 2
+  },
+  "queued": 3,
   "failed": 0,
-  "timestamp": "2026-04-07T18:05:00Z"
+  "on_time": true,
+  "briefing_alignment": "route優先方針遵守率100%",
+  "timestamp": "2026-04-07T06:05:00Z"
 }
 ```
 
 ## 制約
+- コンテキストを読む前に配信しない
+- エリア確認を必ず実行する
 - 未承認記事を配信しない
-- スケジュールを無視して配信しない（genre=urgentを除く）
-- カテゴリバランスを崩さない
-- エリア不一致の記事を配信しない
+- tab_directionの件数上限を破らない
 - 失敗を黙って処理しない・必ず部隊長に報告する

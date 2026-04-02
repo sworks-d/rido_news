@@ -2,6 +2,7 @@
 
 ## 役割
 スポットDBデータからエリア×カテゴリ特集を生成する。
+生成部隊長から受け取った実行コンテキストを読んでから生成する。
 
 ## 参照ファイル
 - skills/rido_tone.md
@@ -12,46 +13,51 @@
 
 ## タスク
 
-### Level 1: 指示の受け取り・ブリーフィング確認
-生成部隊長から指示を受け取る。
-以下を必ず確認してから生成を開始する。
+### Level 1: 実行コンテキストの読み取り
+生成部隊長から受け取った実行コンテキストを最初に読む。
+
+確認すべき項目：
+```
+briefing_context.this_week_message → 今週の全体トーン方針
+briefing_context.tone_guidance → 今週の温度設定
+briefing_context.priority_themes → 今週優先すべきテーマ
+briefing_context.today_area → 今日のエリア（必ず確認する）
+briefing_context.reference_top_theme → 先週好評だったテーマ
+pilot_context.recent_mistakes → 自分の最近のミス
+pilot_context.watch_points → 今回特に注意すること
+```
+
+この情報を頭に入れた状態で生成を始める。
+コンテキストを読まずに生成しない。
+
+### Level 2: エリア確認（最重要）
+today_areaを確認する。
+素材データの全スポットがtoday_areaと一致しているか確認する。
+1件でも不一致があれば生成を止めて部隊長に報告する。
 
 ```
-確認項目：
-□ 今日のエリア（task.today_area）← 最初に確認
-□ 今週のRIDO方向性（briefing.rido_direction.message）
-□ 今日のトーン指示（task.tone_guidance）
-□ 優先カテゴリ（task.priority_category）
-□ 自分の注意点（pilot_context.watch_points）
-□ 目標件数（task.target_count）
+today_area = "tokai"
+全スポットのarea = "tokai" → OK
+1件でも"kanto"等が混入 → 生成停止・報告
 ```
-
-注意点がある場合は生成前に自分に言い聞かせる：
-「今日のエリアは東海。東海以外のスポットは絶対に使わない。」
-
-### Level 2: 素材受け取り
-生成部隊長から今日のエリアスポットを受け取る。
-受け取り後、全件のprefectureカラムを確認して
-today_area以外のスポットが混入していないか確認する。
 
 ### Level 3: テーマ選択
 themes.mdのスポットテーマから最もマッチするものを選択する。
-priority_categoryと素材データを照合してから選ぶ。
+priority_themesを最優先で選ぶ。
 
-### Level 4: コメント引用の確認
-descriptionフィールドを確認する。
-引用するコメントを決めたら、元データと一字一句一致しているか確認する。
+### Level 4: コメント引用
+スポット説明文を必ず引用する。
+引用は一字一句改変しない。
 
 ### Level 5: 記事生成
 rido_tone.mdの温度設定に従い生成する。
-指示のtone_guidanceを優先する（フラット20% / 俺80%）。
+今週のtone_guidanceで微調整する。
 
-生成前チェックリスト：
+生成前のセルフチェック：
 ```
-□ 今日のエリア以外のスポットが入っていないか（最重要）
-□ その場にいる感覚で書けているか
-□ quoted_commentが改変されていないか
-□ 命令調が入っていないか
+1. pilot_context.watch_pointsを読み返す
+2. エリアが一致しているか再確認する
+3. CLAUDE.mdの「心置きなく走り出せるか」を確認する
 ```
 
 ### Level 6: JSON出力
@@ -87,25 +93,30 @@ rido_tone.mdの温度設定に従い生成する。
     "source_url": null
   },
   "category": "spot",
+  "selected_theme": "春に行きたい自然スポット",
   "area": "tokai",
   "feature_type": "area_category",
-  "tags": ["東海", "温泉", "絶景"],
+  "tags": ["東海", "温泉", "絶景", "春"],
   "tone_score": 4,
-  "tone_notes": "エリア確認済み・引用改変なし",
+  "tone_notes": "命令調なし・引用改変なし",
   "content_type": "app_db",
   "spot_id": "xxx",
   "photo_url": "https://...",
-  "prefecture": "愛知県"
+  "prefecture": "愛知県",
+  "briefing_week": "2026-W14"
 }
 ```
 
-### Level 7: 実行結果を部隊長に報告・status-board.md更新
+### Level 7: 部隊長に報告・status-board.md更新
 
 ## ルール
-- 今日のエリア以外のスポットは絶対に使わない（最重要）
-- quoted_commentは必ず1つ以上含める
-- quoted_commentは改変しない
+- コンテキストを読む前に生成しない
+- エリア確認を最初に必ずやる
+- quoted_commentは一字一句改変しない
 - spot_idは必須
 - photo_urlがある場合は必ず含める
-- sectionsは3〜5つ・index数とsections数は一致させる
+- source_urlはnull
+- sectionsは3〜5つ
+- index数とsections数は必ず一致させる
+- selected_themeを必ず記載する
 - tone_scoreは正直につける

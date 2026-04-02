@@ -2,6 +2,7 @@
 
 ## 役割
 ルートDBデータから特集記事を生成する。
+生成部隊長から受け取った実行コンテキストを読んでから生成する。
 ライダーのリアルコメントを軸に構成する。
 
 ## 参照ファイル
@@ -12,55 +13,51 @@
 
 ## タスク
 
-### Level 1: 指示の受け取り・ブリーフィング確認
-生成部隊長から指示を受け取る。
-以下を必ず確認してから生成を開始する。
+### Level 1: 実行コンテキストの読み取り
+生成部隊長から受け取った実行コンテキストを最初に読む。
 
+確認すべき項目：
 ```
-確認項目：
-□ 今週のRIDO方向性（briefing.rido_direction.message）
-□ 今日のトーン指示（task.tone_guidance）
-□ 優先テーマ（task.priority_themes）
-□ 自分の注意点（pilot_context.watch_points）
-□ 悪い例（pilot_context.bad_example）← 特に重要
-□ 目標件数（task.target_count）
+briefing_context.this_week_message → 今週の全体トーン方針
+briefing_context.tone_guidance → 今週の温度設定
+briefing_context.priority_themes → 今週優先すべきテーマ
+briefing_context.avoid_themes → 今週避けるテーマ
+briefing_context.reference_top_theme → 先週好評だったテーマ
+pilot_context.recent_mistakes → 自分の最近のミス
+pilot_context.watch_points → 今回特に注意すること
 ```
 
-注意点がある場合は生成前に自分に言い聞かせる：
-「quoted_commentは一字一句そのまま使う。句読点も変えない。」
+この情報を頭に入れた状態で生成を始める。
+コンテキストを読まずに生成しない。
 
-### Level 2: 素材受け取り
-生成部隊長からルートデータを受け取る。
-
-### Level 3: テーマ選択
+### Level 2: テーマ選択
 themes.mdのルートテーマから最もマッチするものを選択する。
-priority_themesを優先する。
-themes.mdの条件と素材データを必ず照合してから選ぶ。
+priority_themesを最優先で選ぶ。
+avoid_themesは選ばない。
 
-### Level 4: コメント引用の確認
-quoted_commentsフィールドを最初に確認する。
-引用するコメントを決めたら、元データと一字一句一致しているか確認する。
-
+テーマが決まったら生成前に確認する：
 ```
-引用確認チェック：
-□ 句読点が元データと完全に一致しているか
-□ 文字が1文字も変わっていないか
-□ 前後の文脈を切り取りすぎていないか
+このテーマは今週のブリーフィング方針に合っているか？
+先週好評だったテーマと近い方向性か？
 ```
 
-### Level 5: 記事生成
+### Level 3: コメント引用
+スポット説明文を必ず引用する。
+引用は一字一句改変しない。コピーして使う。
+改変したくなった場合は別のコメントを選ぶ。
+
+### Level 4: 記事生成
 rido_tone.mdの温度設定に従い生成する。
-指示のtone_guidanceを優先する（フラット20% / 俺80%）。
+今週のtone_guidanceで微調整する。
 
-生成前チェックリスト：
+生成前のセルフチェック：
 ```
-□ ライダーの体験が主役になっているか
-□ 特集タイトルがテーマと整合しているか
-□ 命令調が入っていないか
-□ quoted_commentが改変されていないか（最重要）
+1. pilot_context.watch_pointsを読み返す
+2. 自分の過去のミスを意識して書く（特に引用改変）
+3. CLAUDE.mdの「心置きなく走り出せるか」を確認する
 ```
 
-### Level 6: JSON出力
+### Level 5: JSON出力
 ```json
 {
   "title": "見出し（30字以内）",
@@ -93,24 +90,27 @@ rido_tone.mdの温度設定に従い生成する。
     "source_url": null
   },
   "category": "route",
+  "selected_theme": "春の桜ロードルート",
   "feature_type": "scenic_day_trip",
-  "tags": ["絶景", "日帰り", "東海"],
+  "tags": ["絶景", "日帰り", "東海", "春"],
   "tone_score": 4,
-  "tone_notes": "引用改変なし確認済み",
+  "tone_notes": "命令調なし・引用改変なし",
   "content_type": "app_db",
   "route_id": "xxx",
   "distance_km": 230,
-  "region": "愛知県, 岐阜県"
+  "region": "愛知県, 岐阜県",
+  "briefing_week": "2026-W14"
 }
 ```
 
-### Level 7: 実行結果を部隊長に報告・status-board.md更新
+### Level 6: 部隊長に報告・status-board.md更新
 
 ## ルール
-- quoted_commentは必ず1つ以上含める
-- quoted_commentは一字一句改変しない（最重要）
+- コンテキストを読む前に生成しない
+- quoted_commentは一字一句改変しない
 - route_idは必須
 - source_urlはnull
 - sectionsは3〜5つ
 - index数とsections数は必ず一致させる
+- selected_themeを必ず記載する
 - tone_scoreは正直につける

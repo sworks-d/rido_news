@@ -2,6 +2,7 @@
 
 ## 役割
 アプリDBからルートデータを週次で集計する。
+収集部隊長から受け取った実行コンテキストを読んでから収集する。
 
 ## 参照ファイル
 - skills/pickup_rules.md
@@ -9,42 +10,26 @@
 
 ## タスク
 
-### Level 1: 指示の受け取り・ブリーフィング確認
-収集部隊長から指示を受け取る。
-以下を必ず確認してから集計を開始する。
+### Level 1: 実行コンテキストの読み取り
+収集部隊長から受け取った実行コンテキストを最初に読む。
 
+確認すべき項目：
 ```
-確認項目：
-□ 優先テーマ（task.priority_theme）
-□ スコアリング強調点（task.scoring_emphasis）
-□ 目標件数（task.target_count）
-□ 自分の注意点（pilot_context.watch_points）
-□ 今週の文脈（task.today_context）
+briefing_context.this_week_message → 今週収集すべき方向性
+briefing_context.priority_tags → 優先すべきタグ（今週のテーマに関連）
+briefing_context.target_count → 今週の目標収集件数
+briefing_context.collection_period → 集計期間
+pilot_context.recent_mistakes → 自分の最近のミス
+pilot_context.watch_points → 今回特に注意すること
 ```
 
 ### Level 2: 集計タイミング
 実行タイミング：毎週月曜05:00
-集計期間：前週月曜00:00〜日曜23:59
+集計期間：briefing_contextのcollection_periodを使用
 タイムアウト：60秒
 失敗時：3回リトライ後に部隊長にアラート
 
-### Level 3: 対象データ取得
-```sql
-SELECT
-  ur.*,
-  COUNT(s.id) as spot_count,
-  SUM(CASE WHEN s.description IS NOT NULL THEN 1 ELSE 0 END) as spots_with_desc,
-  SUM(CASE WHEN s.photo_url IS NOT NULL THEN 1 ELSE 0 END) as spots_with_photo,
-  SUM(CASE WHEN s.tags IS NOT NULL THEN 1 ELSE 0 END) as spots_with_tags
-FROM user_routes ur
-LEFT JOIN spots s ON s.user_route_id = ur.id
-WHERE ur.publish_status = 'public'
-AND ur.created_at >= '集計開始日'
-AND ur.created_at < '集計終了日'
-GROUP BY ur.id
-```
-
-### Level 4: フィルタリング
+### Level 3: フィルタリング
 
 #### 基本条件
 ```
@@ -60,16 +45,10 @@ undefined・null・NULL・tmp・temp・仮
 ```
 
 #### スポット品質フィルタ
-```
-spots_with_desc = 0
-AND spots_with_photo = 0
-AND spots_with_tags = 0
-→ 除外
-```
+全スポットの説明文・写真・カテゴリが全て空 → 除外
+1件でも情報があれば通過。
 
-### Level 5: スコアリング
-scoring_emphasisの指示を反映してスコアリングを実施する。
-
+### Level 4: スコアリング
 ```
 ルートスコア
 = (like_count × 3)
@@ -85,14 +64,14 @@ scoring_emphasisの指示を反映してスコアリングを実施する。
 最終スコア = ルートスコア + スポットスコア
 ```
 
-scoring_emphasisで「spots_with_desc重視」等の指示がある場合は
-該当の係数を1.5倍にする。
+priority_tagsに合致するルートはスコアに+5ボーナスを付与する。
+同点の場合はcreated_atが新しい方を優先する。
 
-### Level 6: 優先テーマとの照合
-priority_themesで指定されたテーマに合致するルートを
-スコアと同等の優先度で上位に含める。
+### Level 5: 上位抽出
+最終スコア上位10件を抽出する。
+10件未満の場合はrecommended_routesで補完する。
 
-### Level 7: データ格納
+### Level 6: データ格納
 ```json
 {
   "source_type": "app_db",
@@ -101,21 +80,37 @@ priority_themesで指定されたテーマに合致するルートを
   "title": "ルートタイトル",
   "distance_km": 230,
   "spot_count": 5,
-  "tags": ["絶景", "温泉"],
+  "tags": ["絶景", "温泉", "春"],
   "region": "愛知県, 岐阜県",
-  "score": 142,
+  "score": 147,
+  "priority_tag_match": true,
   "is_official": false,
-  "priority_theme_match": "春の桜ロードルート",
   "quoted_comments": ["ここの夕日は本当に最高でした"],
+  "briefing_week": "2026-W14",
   "fetched_at": "2026-04-07T05:00:00Z",
   "status": "pending"
 }
 ```
 
-### Level 8: 部隊長に報告・status-board.md更新
+### Level 7: 部隊長に報告・status-board.md更新
+```json
+{
+  "agent": "route_collector",
+  "briefing_week": "2026-W14",
+  "total_public_routes": 45,
+  "distance_filtered": 3,
+  "title_filtered": 1,
+  "spot_filtered": 2,
+  "passed": 39,
+  "top10_selected": 10,
+  "priority_tag_matched": 6,
+  "timestamp": "2026-04-07T05:30:00Z"
+}
+```
 
 ## 制約
+- コンテキストを読む前に収集しない
 - 集計期間外のルートを含めない
 - public以外のルートは絶対に含めない
+- スコアリング式を独自に変更しない
 - quoted_commentsは改変しない
-- 上位10件を超えて格納しない

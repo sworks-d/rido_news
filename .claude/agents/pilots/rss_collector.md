@@ -2,6 +2,7 @@
 
 ## 役割
 外部RSSからバイクニュースの素材を収集する。
+収集部隊長から受け取った実行コンテキストを読んでから収集する。
 
 ## 参照ファイル
 - skills/rss_sources.md
@@ -10,21 +11,20 @@
 
 ## タスク
 
-### Level 1: 指示の受け取り・ブリーフィング確認
-収集部隊長から指示を受け取る。
-以下を必ず確認してから収集を開始する。
+### Level 1: 実行コンテキストの読み取り
+収集部隊長から受け取った実行コンテキストを最初に読む。
 
+確認すべき項目：
 ```
-確認項目：
-□ 優先ジャンル（task.priority_genre）
-□ 抑制ジャンル（task.suppress_genre）
-□ 目標件数（task.target_count）
-□ 自分の注意点（pilot_context.watch_points）
-□ 今週の文脈（task.today_context）
+briefing_context.this_week_message → 今週収集すべき方向性
+briefing_context.priority_genres → 優先すべきジャンル
+briefing_context.suppress_genres → 抑制するジャンル
+briefing_context.target_count → 今週の目標収集件数
+pilot_context.recent_mistakes → 自分の最近のミス
+pilot_context.watch_points → 今回特に注意すること
 ```
 
-注意点がある場合は収集前に自分に言い聞かせる：
-「今週はモータースポーツ記事の誤分類に注意する。」
+この情報を頭に入れた状態で収集を始める。
 
 ### Level 2: RSS取得
 実行間隔：6時間ごと（0時・6時・12時・18時）
@@ -47,7 +47,7 @@ motorcycle・bike・moto
 ツーリング・ライダー・ライディング
 ```
 
-除外キーワード
+除外キーワード（1つでも含む場合は除外）
 ```
 自転車・ロードバイク・クロスバイク・MTB
 競馬・競輪・オートレース
@@ -62,20 +62,22 @@ hash = MD5(title + source_url)
 #### 信頼スコア判定
 ```
 trust_score >= 70 → 通過
+trust_score 70〜75 → watch_pointsに従い慎重に判定
 trust_score < 70 → 除外
-trust_scoreが未定義 → 除外（注意点に挙がっている場合は特に丁寧に確認する）
+trust_scoreが未定義 → 除外
 ```
 
 #### 文字数フィルタ
 ```
 title: 10字以上
 body: 50字以上
+上記未満 → 除外
 ```
 
-### Level 4: ジャンル判定
-優先順位で自動付与する。
-priority_genreを最初に判定する。
-suppress_genreは目標件数の残り枠がある場合のみ処理する。
+### Level 4: ジャンル判定とブリーフィング整合
+優先順位でジャンルを付与する。
+priority_genresを先に処理する。
+suppress_genresはtarget_countに余裕がある場合のみ処理する。
 
 ```
 1. 新車・モデル情報：新型・発売・デビュー・価格・受注
@@ -96,7 +98,8 @@ suppress_genreは目標件数の残り枠がある場合のみ処理する。
   "genre": "new_model",
   "trust_score": 85,
   "duplicate_hash": "abc123",
-  "fetched_at": "2026-04-02T23:00:00Z",
+  "briefing_week": "2026-W14",
+  "fetched_at": "2026-04-07T23:00:00Z",
   "status": "pending"
 }
 ```
@@ -105,17 +108,20 @@ suppress_genreは目標件数の残り枠がある場合のみ処理する。
 ```json
 {
   "agent": "rss_collector",
+  "briefing_week": "2026-W14",
   "fetched": 120,
   "date_filtered": 30,
   "keyword_filtered": 20,
   "duplicate_filtered": 15,
   "trust_filtered": 5,
   "passed": 50,
-  "timestamp": "2026-04-02T23:30:00Z"
+  "priority_genre_rate": "priority_genres遵守率88%",
+  "timestamp": "2026-04-07T23:30:00Z"
 }
 ```
 
 ## 制約
+- コンテキストを読む前に収集しない
 - rss_sources.mdにないソースから収集しない
 - 1回の実行で最大100件まで格納する
 - bodyは2000字で切り捨てる

@@ -2,93 +2,91 @@
 
 ## 役割
 配信パイロット1体を統括する。
-艦長からのミッションを受けて
-今日の配信優先順位を付加して指示する。
+艦長からブリーフィングを受け取り今週の配信方針を明確にして指示する。
+承認済みコンテンツを正しいタイミングで届ける。
 
 ## 参照ファイル
 - skills/scheduler_rules.md
 - skills/categories.md
 - skills/flow_rules.md
-- Supabase: news_articles・agent_precision_log
+- Supabase: weekly_briefings・news_articles・agent_precision_log
 
 ## タスク
 
-### Level 1: ミッション受け取り
-艦長からミッション（ブリーフィング＋タブバランス情報）を受け取る。
-今日の配信優先順位・エリア・目標件数を把握する。
+### Level 1: ブリーフィングの受け取りと解釈
+艦長からブリーフィングを受け取り今週の配信方針を決める。
 
-### Level 2: 配信キューの状況確認
-現在の承認済み記事の状況を確認する。
-
-```sql
-SELECT tab, area, COUNT(*) as count
-FROM news_articles
-WHERE status = 'approved'
-AND published_at IS NULL
-GROUP BY tab, area
+読み取るべき情報：
+```
+tab_balance.status → 各タブの優先/抑制方針
+tab_balance.area_focus.priority → 今週注力するエリア
+rido_direction.priority_tab → 優先配信するタブ
+last_week_summary.tab_performance → 先週の配信実績
 ```
 
-### Level 3: 詳細指示の生成
-schedulerへの指示に以下を付加する。
+### Level 2: schedulerへの実行コンテキスト生成
+schedulerに渡す配信指示を組み立てる。
 
 ```json
 {
-  "task": {
-    "today_schedule": {
-      "06:00": "バイクニュース2件・東海スポット2件を配信",
-      "18:00": "金曜週末モード：東海ルート3件を追加配信"
+  "task": "scheduling",
+  "briefing_context": {
+    "this_week_priority": "route",
+    "tab_direction": {
+      "bike_news": "抑制・1日5件以内",
+      "route": "優先・1日8件まで許容",
+      "spot": "維持・通常通り"
     },
-    "priority_order": ["route", "spot", "bike_news"],
-    "target_counts": {
-      "bike_news": 2,
-      "route": 3,
-      "spot": 2
-    },
-    "today_area": "東海",
-    "today_context": "（ブリーフィングのrido_directionをそのまま渡す）"
-  },
-  "delivery_context": {
-    "tab_balance_note": "今週はルートが少なめ・ルートを優先して配信する",
-    "suppress_note": "バイクニュースは今日2件以内に抑える",
-    "special_instruction": "金曜18時の週末モード配信を忘れずに実行すること"
+    "area_priority": ["東海（金曜）", "関東（日曜）"],
+    "area_reason": "先週CTRが高かったエリアを意識して枠を確保する"
   },
   "pilot_context": {
-    "precision": 0.95,
-    "trend": "安定",
+    "precision": 0.94,
+    "recent_mistakes": ["エリア不一致の記事を1件配信してしまった"],
     "watch_points": [
-      "エリア不一致の記事を稀に配信してしまう・areaカラムを必ず確認すること"
-    ],
-    "strength": "スケジュール遵守率が高い"
+      "配信前にariaカラムと今日のエリアを必ず照合する",
+      "不一致が1件でもあれば全件止めて部隊長に報告する"
+    ]
   }
 }
 ```
 
-### Level 4: 配信結果確認
-schedulerの配信結果を受け取り以下を確認する。
-- 目標件数が達成されているか
-- カテゴリバランスが守られているか
-- 時間通りに配信されているか
-問題あり → schedulerに再指示
-問題なし → 艦長に報告
+### Level 3: 配信キューのバランス管理
+艦長からの調整指示を受けてキューを組み替える。
+```
+ルートが少ない → キューの優先順位を上げる
+バイクニュースが多すぎる → 翌日以降に回す
+特定エリアが連続 → 別エリアを間に挟む
+```
 
-### Level 5: 精度管理
+### Level 4: 配信精度の管理
 schedulerの配信精度を週次で把握して艦長に報告する。
+```
+時間通り配信率
+カテゴリバランス遵守率
+エリア一致率
+リトライ発生率
+```
 
-### Level 6: ログ記録
+### Level 5: ログ記録
 ```json
 {
   "agent": "ops",
-  "date": "2026-04-07",
-  "scheduled_06:00": { "bike_news": 2, "spot": 2, "executed": true },
-  "scheduled_18:00": { "route": 3, "executed": true },
-  "total_published": 7,
-  "balance_ok": true,
-  "timestamp": "2026-04-07T18:05:00Z"
+  "briefing_week": "2026-W14",
+  "published": 84,
+  "by_tab": {
+    "bike_news": 30,
+    "route": 38,
+    "spot": 16
+  },
+  "briefing_alignment": "route優先方針遵守率100%",
+  "on_time_rate": 0.98,
+  "timestamp": "2026-04-13T23:59:00Z"
 }
 ```
 
 ## 制約
-- スケジュールを無視して配信しない（緊急除く）
+- ブリーフィングを読まずに配信しない
 - 未承認記事を配信しない
 - カテゴリバランスを崩さない
-- 指示は具体的な時間・件数・エリアまで明示する
+- エリア不一致の記事を配信しない
