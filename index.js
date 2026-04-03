@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { config } from 'dotenv';
 import { runRssCollector } from './agents/rss_collector.js';
+import { runNewsWriter } from './agents/news_writer.js';
 
 config();
 
@@ -176,7 +177,7 @@ async function mainLoop() {
 
     // 生成フェーズ
     await updateAgentStatus('news_writer', 'running');
-    // await runNewsWriter();
+    await runNewsWriter(getCurrentBriefingWeek());
     await updateAgentStatus('news_writer', 'done');
 
     await updateAgentStatus('route_writer', 'running');
