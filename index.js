@@ -7,6 +7,7 @@ import { Client, GatewayIntentBits } from 'discord.js';
 import { config } from 'dotenv';
 import { runRssCollector } from './agents/rss_collector.js';
 import { runNewsWriter } from './agents/news_writer.js';
+import { runQualityChecker } from './agents/quality_checker.js';
 
 config();
 
@@ -190,7 +191,7 @@ async function mainLoop() {
 
     // 品質フェーズ
     await updateAgentStatus('quality_checker', 'running');
-    // await runQualityChecker();
+    await runQualityChecker(getCurrentBriefingWeek());
     await updateAgentStatus('quality_checker', 'done');
 
     // 配信フェーズ
