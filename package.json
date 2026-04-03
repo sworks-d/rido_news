@@ -1,0 +1,14 @@
+{
+  "name": "rido-news-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test:discord": "node test_discord.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "@supabase/supabase-js": "^2.43.1"
+  }
+}
