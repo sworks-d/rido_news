@@ -8,6 +8,7 @@ import { config } from 'dotenv';
 import { runRssCollector } from './agents/rss_collector.js';
 import { runNewsWriter } from './agents/news_writer.js';
 import { runQualityChecker } from './agents/quality_checker.js';
+import { runScheduler } from './agents/scheduler.js';
 
 config();
 
@@ -196,7 +197,7 @@ async function mainLoop() {
 
     // 配信フェーズ
     await updateAgentStatus('scheduler', 'running');
-    // await runScheduler();
+    await runScheduler(getCurrentBriefingWeek());
     await updateAgentStatus('scheduler', 'done');
 
     console.log(`[Scheduler] ${hour}時のパイプライン完了`);
