@@ -22,58 +22,55 @@
 
 ## 1. メーカー公式（trust_score: 95）
 
-### 国内メーカー
-| メーカー | RSS URL | 備考 |
+| メーカー | RSS URL | 疎通 |
 |---|---|---|
-| Honda | https://www.honda.co.jp/rss/motorproducts.rdf | 二輪製品情報 |
-| Yamaha | https://www.yamaha-motor.co.jp/mc/news/rss.xml | バイクニュース |
-| Kawasaki | https://www.kawasaki-motors.com/ja/news/rss/ | 新着情報 |
-| Suzuki | https://www1.suzuki.co.jp/motor/rss/news.xml | ニュース |
+| Kawasaki | https://www.kawasaki-motors.com/ja/news/rss/ | ✅ |
+| Suzuki | https://www1.suzuki.co.jp/motor/rss/news.xml | ✅ |
 
-### 海外メーカー（日本語サイト）
-| メーカー | RSS URL | 備考 |
-|---|---|---|
-| Ducati Japan | https://www.ducati.com/jp/ja/news/rss | ニュース |
-| BMW Motorrad Japan | https://www.bmw-motorrad.jp/ja/public/news.rss | ニュース |
-| Triumph Japan | https://www.triumphmotorcycles.jp/rss | ニュース |
-| KTM Japan | https://www.ktm.com/ja-jp/news/rss.xml | ニュース |
-| Aprilia Japan | https://www.aprilia.com/jp_JA/news/rss/ | ニュース |
-| Harley-Davidson Japan | https://www.harley-davidson.com/jp/ja/news/rss.xml | ニュース |
-
-※メーカー公式RSSは提供状況が変わる場合がある。
-　404エラーが続く場合はrss_collectorが部隊長に報告する。
+※Honda・Yamaha・海外メーカー（Ducati/BMW/Triumph/KTM/Aprilia/Harley）は
+　RSS未提供または404のため対象外。
+　公式サイトのURL変更が確認できた場合は整備士が追加する。
 
 ---
 
 ## 2. バイク系メディア（trust_score: 85）
 
-| メディア | RSS URL | 特徴 |
-|---|---|---|
-| Webikeプラス | https://news.webike.net/feed/ | 国内最大級・新車・用品・ツーリング |
-| WEBヤングマシン | https://young-machine.com/feed/ | 新車情報・速報性が高い |
-| モーサイ | https://mc-web.jp/feed/ | 老舗・信頼性高い |
-| バイクブロスマガジンズ | https://news.bikebros.co.jp/feed/ | 新型情報・試乗レポート |
+| メディア | RSS URL | 疎通 | 特徴 |
+|---|---|---|---|
+| Webikeプラス | https://news.webike.net/feed/ | ✅ | 国内最大級・新車・用品 |
+| モーサイ | https://mc-web.jp/feed/ | ✅ | 老舗・信頼性高い |
+| バイクブロスマガジンズ | https://news.bikebros.co.jp/feed/ | ✅ | 新型情報・試乗レポート |
+
+※WEBヤングマシン（young-machine.com）は403（Botブロック）のため対象外。
+　User-Agent設定で解消できた場合は整備士が追加する。
 
 ---
 
-## 3. プレスリリース（trust_score: 75）
+## 3. イベント情報（trust_score: 80）
 
-| サービス | RSS URL | 備考 |
-|---|---|---|
-| PR TIMES（バイクタグ） | https://prtimes.jp/rss/keyword/バイク.rss | バイク関連PR |
-| PR TIMES（二輪タグ） | https://prtimes.jp/rss/keyword/二輪.rss | 二輪関連PR |
+| イベント | RSS URL | 疎通 | 備考 |
+|---|---|---|---|
+| 東京モーターサイクルショー | https://www.motorcycleshow.org/rss/ | ✅ | 年次・開催時期のみ有効 |
+
+※大阪モーターサイクルショーはドメイン不達のため対象外。
 
 ---
 
-## 4. イベント情報（trust_score: 80）
+## 4. 対象外ソース（理由付き）
 
-| イベント | RSS URL | 備考 |
-|---|---|---|
-| 東京モーターサイクルショー | https://www.motorcycleshow.org/rss/ | 年次イベント |
-| 大阪モーターサイクルショー | https://www.osaka-motorcycleshow.jp/rss/ | 年次イベント |
-
-※イベント系RSSは開催時期のみアクティブ。
-　オフシーズンは404になることがある。
+| ソース | 理由 |
+|---|---|
+| Honda RSS | 404（RDF廃止の可能性） |
+| Yamaha RSS | 404（URL変更の可能性） |
+| Ducati Japan | 404（RSS未提供） |
+| BMW Motorrad Japan | TIMEOUT |
+| Triumph Japan | 404（RSS未提供） |
+| KTM Japan | 404（RSS未提供） |
+| Aprilia Japan | 404（RSS未提供） |
+| Harley-Davidson Japan | 404（RSS未提供） |
+| WEBヤングマシン | 403（Botブロック） |
+| PR TIMES バイク | 404（URL形式エラー） |
+| 大阪モーターサイクルショー | ドメイン不達 |
 
 ---
 
@@ -99,6 +96,7 @@
 |---|---|
 | 404（RSS URL不達） | スキップ・部隊長にログ報告 |
 | タイムアウト（30秒超） | 3回リトライ後にスキップ |
+| 403（Botブロック） | スキップ・部隊長にアラート |
 | RSS形式エラー | スキップ・部隊長にアラート |
 | 連続3回エラー | 部隊長経由でDiscordにアラート |
 
@@ -108,4 +106,5 @@
 
 - RSSのURLが変わった場合は整備士が更新する
 - 新規ソースの追加はリーダーの承認後に追加する
-- 信頼スコアの変更は参謀の分析レポートを根拠にする
+- 疎通確認は月次で実施する（参謀が管理）
+- 対象外ソースの復活確認は四半期ごとに実施する
