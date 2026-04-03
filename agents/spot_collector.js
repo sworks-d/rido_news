@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
+import { notifyFallback } from '../utils/discord.js';
 
 config();
 
@@ -112,6 +113,7 @@ export async function runSpotCollector(briefingWeek, briefing) {
   if (userCount === 0) {
     console.log(`[spot_collector] ⚠️ エリアのユーザー数0 → フォールバックモード`);
     fallbackMode = true;
+    await notifyFallback('spot_collector', `${area.label}エリアのユーザー数が0件 → 全国フォールバックモードで実行`);
   }
 
   let spots = [];

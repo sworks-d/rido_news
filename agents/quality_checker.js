@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
+import { notifyLayer1, notifyAgentError } from '../utils/discord.js';
 
 config();
 
@@ -284,6 +285,7 @@ export async function runQualityChecker(briefingWeek) {
           layer1_result: l1.reason,
         }).eq('id', article.id);
         await logQuality(article.id, l1.reason, null, null, 'pass', null, 'pending_review');
+        await notifyLayer1(article.title, l1.reason, article.source_url);
         pendingReview++;
         continue;
       }

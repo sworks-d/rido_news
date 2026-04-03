@@ -5,6 +5,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { config } from 'dotenv';
+import {
+  sendDiscord, notifyStartup, notifyPipelineStart,
+  notifyPipelineComplete, notifyDailyReport, notifyWeeklyReport,
+  notifyAgentError
+} from './utils/discord.js';
 import { runRssCollector } from './agents/rss_collector.js';
 import { runNewsWriter } from './agents/news_writer.js';
 import { runQualityChecker } from './agents/quality_checker.js';
@@ -166,46 +171,33 @@ async function mainLoop() {
   // ============================================
   if (isTime(0) || isTime(6) || isTime(12) || isTime(18)) {
     console.log(`[Scheduler] ${hour}時のパイプライン開始`);
-    await sendDiscord('status', `【パイプライン開始】${hour}時のサイクルを開始します。`);
+    await notifyPipelineStart(hour);
+    const week = getCurrentBriefingWeek();
+    const stats = {};
 
-    // 収集フェーズ
-    await updateAgentStatus('rss_collector', 'running');
-    await runRssCollector(getCurrentBriefingWeek());
-    await updateAgentStatus('rss_collector', 'done');
+    try {
+      // 収集フェーズ
+      stats.rss = await runRssCollector(week);
+      stats.route = await runRouteCollector(week, null);
+      stats.spot = await runSpotCollector(week, null);
 
-    await updateAgentStatus('route_collector', 'running');
-    await runRouteCollector(getCurrentBriefingWeek(), null);
-    await updateAgentStatus('route_collector', 'done');
+      // 生成フェーズ
+      stats.news = await runNewsWriter(week);
+      stats.routeWrite = await runRouteWriter(week);
+      stats.spotWrite = await runSpotWriter(week);
 
-    await updateAgentStatus('spot_collector', 'running');
-    await runSpotCollector(getCurrentBriefingWeek(), null);
-    await updateAgentStatus('spot_collector', 'done');
+      // 品質フェーズ
+      stats.quality = await runQualityChecker(week);
 
-    // 生成フェーズ
-    await updateAgentStatus('news_writer', 'running');
-    await runNewsWriter(getCurrentBriefingWeek());
-    await updateAgentStatus('news_writer', 'done');
+      // 配信フェーズ
+      stats.scheduler = await runScheduler(week);
 
-    await updateAgentStatus('route_writer', 'running');
-    await runRouteWriter(getCurrentBriefingWeek());
-    await updateAgentStatus('route_writer', 'done');
-
-    await updateAgentStatus('spot_writer', 'running');
-    await runSpotWriter(getCurrentBriefingWeek());
-    await updateAgentStatus('spot_writer', 'done');
-
-    // 品質フェーズ
-    await updateAgentStatus('quality_checker', 'running');
-    await runQualityChecker(getCurrentBriefingWeek());
-    await updateAgentStatus('quality_checker', 'done');
-
-    // 配信フェーズ
-    await updateAgentStatus('scheduler', 'running');
-    await runScheduler(getCurrentBriefingWeek());
-    await updateAgentStatus('scheduler', 'done');
-
-    console.log(`[Scheduler] ${hour}時のパイプライン完了`);
-    await sendDiscord('status', `【パイプライン完了】${hour}時のサイクルが完了しました。`);
+      console.log(`[Scheduler] ${hour}時のパイプライン完了`);
+      await notifyPipelineComplete(hour, stats);
+    } catch (err) {
+      await notifyAgentError('pipeline', err.message);
+      console.error('[Scheduler] パイプラインエラー:', err.message);
+    }
   }
 
   // ============================================
@@ -222,7 +214,8 @@ async function mainLoop() {
   // ============================================
   if (isTime(7)) {
     console.log('[Scheduler] 日次レポート送信');
-    // await runDailyReport();
+    // 簡易レポート（Supabase不要な分だけ）
+    await notifyDailyReport({ collected: 0, generated: 0, approved: 0, pendingReview: 0, errors: 0 });
   }
 
   // ============================================
@@ -230,7 +223,7 @@ async function mainLoop() {
   // ============================================
   if (day === 1 && isTime(8)) {
     console.log('[Scheduler] 週次レポート送信');
-    // await runWeeklyReport();
+    await notifyWeeklyReport({ totalPublished: 0, bikeNews: 0, route: 0, spot: 0, pendingReview: 0, errors: 0, nextWeekSuggestion: null }, getCurrentBriefingWeek());
   }
 }
 
@@ -239,7 +232,7 @@ async function mainLoop() {
 // ============================================
 discord.once('clientReady', async () => {
   console.log(`✅ RIDO News Agent起動完了: ${discord.user.tag}`);
-  await sendDiscord('status', '【起動】RIDO News Agentが起動しました。');
+  await notifyStartup();
 
   // 1分ごとにループ実行
   setInterval(mainLoop, 60 * 1000);

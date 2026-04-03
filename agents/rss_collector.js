@@ -4,6 +4,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
 import crypto from 'crypto';
+import { notifyAgentError } from '../utils/discord.js';
 
 config();
 
@@ -204,6 +205,7 @@ export async function runRssCollector(briefingWeek) {
       }
     } catch (err) {
       console.error(`[rss_collector] ${source.name} エラー:`, err.message);
+      // 連続エラーは呼び出し元でまとめて通知
     }
   }
 
