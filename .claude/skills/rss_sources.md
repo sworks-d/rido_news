@@ -50,9 +50,11 @@
 
 | メディア | RSS URL | 疎通 | 特徴 |
 |---|---|---|---|
-| Motorcycle News (MCN) | https://www.motorcyclenews.com/feed/ | 要確認 | 英国最大手・全メーカー網羅 |
-| Total Motorcycle | https://www.totalmotorcycle.com/feed/ | 要確認 | 全メーカー・モデル情報豊富 |
-| Motorcycles.News | https://www.motorcycles.news/en/feed/ | 要確認 | 欧州メーカー情報が強い |
+| Total Motorcycle | https://www.totalmotorcycle.com/feed/ | ✅ | 全メーカー・モデル情報豊富 |
+| Motorcycles.News | https://www.motorcycles.news/en/feed/ | ✅ | 欧州メーカー情報が強い |
+| RideApart | https://www.rideapart.com/rss/articles/all | 要確認 | 北米・全メーカー網羅 |
+
+※Motorcycle News (MCN) は404のため対象外。
 
 ※英語ソースは日本未発売情報を含む場合がある。
 　rss_collectorがjp_relevanceフラグを判定する（下記参照）。
@@ -79,6 +81,7 @@
 | KTM Japan | 404（RSS未提供） |
 | Aprilia Japan | 404（RSS未提供） |
 | Harley-Davidson Japan | 404（RSS未提供） |
+| Motorcycle News (MCN) | 404（RSS廃止の可能性） |
 | WEBヤングマシン | 403（Botブロック） |
 | PR TIMES バイク | 404（URL形式エラー） |
 | 大阪モーターサイクルショー | ドメイン不達 |
