@@ -20,7 +20,7 @@ const channels = {
   status: process.env.DISCORD_CHANNEL_STATUS,
 };
 
-client.once('ready', async () => {
+client.once('clientReady', async () => {
   console.log(`✅ Bot起動完了: ${client.user.tag}`);
 
   for (const [name, id] of Object.entries(channels)) {
