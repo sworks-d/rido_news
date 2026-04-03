@@ -83,6 +83,11 @@ ${weekMessage}
 ソース：${raw.source_name}
 言語：${isEnglish ? '英語（日本語で自然に生成すること）' : '日本語'}${jpNote}
 
+## 引用元の掲示
+sectionsの最後に必ず「引用元」sectionを追加する。
+link_typeは"external"・link_idにsource_urlをそのまま入れる。
+bodyは「この記事は[ソース名]の記事を元に作成しました。」の形式。
+
 ## 出力形式（JSON）
 以下のJSONのみ出力。前後にテキスト・コードブロック不要。
 
@@ -91,9 +96,10 @@ ${weekMessage}
   "summary": "概要（100字以内・3行以内）",
   "index": ["ポイント1（15字以内）","ポイント2（15字以内）","ポイント3（15字以内）"],
   "sections": [
-    {"heading":"ポイント1","body":"段落テキスト（200字以内）","quoted_comment":null},
-    {"heading":"ポイント2","body":"段落テキスト（200字以内）","quoted_comment":null},
-    {"heading":"ポイント3","body":"段落テキスト（200字以内）","quoted_comment":null}
+    {"heading":"ポイント1","body":"段落テキスト（200字以内）","quoted_comment":null,"link_type":null,"link_id":null},
+    {"heading":"ポイント2","body":"段落テキスト（200字以内）","quoted_comment":null,"link_type":null,"link_id":null},
+    {"heading":"ポイント3","body":"段落テキスト（200字以内）","quoted_comment":null,"link_type":null,"link_id":null},
+    {"heading":"引用元","body":"この記事は[ソース名]の記事を元に作成しました。","quoted_comment":null,"link_type":"external","link_id":"[source_url]"}
   ],
   "tags": ["タグ1","タグ2","タグ3"],
   "tone_score": 4,

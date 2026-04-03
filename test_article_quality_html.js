@@ -56,7 +56,8 @@ async function genBikeNews(raw) {
 素材タイトル：${raw.title}
 本文：${raw.body}
 言語：${raw.source_lang === 'en' ? '英語→日本語に自然に変換' : '日本語'}${jpNote}
-JSONのみ出力：{"title":"30字以内","summary":"100字以内","index":["h1","h2","h3"],"sections":[{"heading":"h","body":"200字以内","quoted_comment":null,"link_type":null,"link_id":null},{"heading":"h","body":"200字以内","quoted_comment":null,"link_type":null,"link_id":null},{"heading":"h","body":"200字以内","quoted_comment":null,"link_type":null,"link_id":null}],"tags":["t1","t2","t3"],"tone_score":4,"tone_notes":""}`);
+sectionsの最後に必ず引用元sectionを追加：{"heading":"引用元","body":"この記事は[ソース名]の記事を元に作成しました。","quoted_comment":null,"link_type":"external","link_id":"[source_url]"}
+JSONのみ出力：{"title":"30字以内","summary":"100字以内","index":["h1","h2","h3","引用元"],"sections":[{"heading":"h","body":"200字以内","quoted_comment":null,"link_type":null,"link_id":null},{"heading":"h","body":"200字以内","quoted_comment":null,"link_type":null,"link_id":null},{"heading":"h","body":"200字以内","quoted_comment":null,"link_type":null,"link_id":null},{"heading":"引用元","body":"この記事は[ソース名]の記事を元に作成しました。","quoted_comment":null,"link_type":"external","link_id":"[source_url]"}],"tags":["t1","t2","t3"],"tone_score":4,"tone_notes":""}`);
 }
 
 async function genSpots(data) {
@@ -88,7 +89,7 @@ function renderCard(label, article) {
       <div class="s-heading">${s.heading}</div>
       <div class="s-body">${s.body}</div>
       ${s.quoted_comment ? `<div class="quote">▶ 「${s.quoted_comment}」</div>` : ''}
-      ${s.link_type ? `<div class="link-badge">${s.link_type === 'spot' ? '📍' : '🗺️'} アプリで見る → ${s.link_type}/${s.link_id}</div>` : ''}
+      ${s.link_type === 'external' ? `<a class="link-badge external" href="${s.link_id}" target="_blank">🔗 引用元を見る</a>` : s.link_type ? `<div class="link-badge">${s.link_type === 'spot' ? '📍' : '🗺️'} アプリで見る → ${s.link_type}/${s.link_id}</div>` : ''}
     </div>`).join('');
 
   const tags = (article.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
@@ -154,6 +155,7 @@ body{background:#0f0f10;color:#e8e6e0;font-family:-apple-system,'Helvetica Neue'
 .s-body{font-size:13px;color:#c8c6c0;line-height:1.8}
 .quote{margin-top:6px;padding:8px 12px;background:rgba(232,168,66,0.06);border:1px solid rgba(232,168,66,0.2);border-radius:6px;font-size:12px;color:#e8a842;font-style:italic}
 .link-badge{margin-top:6px;font-size:11px;color:#52c97a;font-family:monospace;padding:4px 8px;background:rgba(82,201,122,0.06);border:1px solid rgba(82,201,122,0.2);border-radius:4px;display:inline-block}
+.link-badge.external{color:#4a9ef8;background:rgba(74,158,248,0.06);border-color:rgba(74,158,248,0.2);text-decoration:none}
 .tone-notes{margin-top:10px;font-size:11px;color:#5a5855;font-family:monospace}
 </style></head><body>
 <div class="header"><h1>RIDO 記事クオリティ確認</h1><p>生成日時: ${gen} / model: claude-haiku-4-5</p></div>
