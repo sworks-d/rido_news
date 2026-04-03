@@ -30,11 +30,11 @@ async function main() {
   await reportRssCollector({ passed: 35, fetched: 120, duplicate: 18 });
   await sleep(800);
 
-  console.log('[4] オリヴァー：ルート集計報告 → #rido-daily');
+  console.log('[4] アイナ：ルート集計報告 → #rido-daily');
   await reportRouteCollector({ stored: 8, fetched: 45, fallback: 2 });
   await sleep(800);
 
-  console.log('[5] シロー：スポット調査報告 → #rido-daily');
+  console.log('[5] ガトー：スポット調査報告 → #rido-daily');
   await reportSpotCollector({ stored: 10, area: '東海', fallbackMode: false });
   await sleep(800);
 
@@ -42,11 +42,11 @@ async function main() {
   await reportNewsWriter({ passed: 12, rejected: 1 });
   await sleep(800);
 
-  console.log('[7] イオ：ルート記事報告 → #rido-daily');
+  console.log('[7] シロー：ルート記事報告 → #rido-daily');
   await reportRouteWriter({ passed: 1, rejected: 0 });
   await sleep(800);
 
-  console.log('[8] バーナード：スポット記事報告 → #rido-daily');
+  console.log('[8] コウ：スポット記事報告 → #rido-daily');
   await reportSpotWriter({ passed: 1, area: '東海' });
   await sleep(800);
 

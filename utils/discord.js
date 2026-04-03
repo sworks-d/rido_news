@@ -53,13 +53,12 @@ const CHARS = {
   ma_kube: { name: 'マ・クベ【収集部隊長】', icon: '🏺' },
   haman: { name: 'ハマーン・カーン【生成部隊長】', icon: '👑' },
   scirocco: { name: 'パプティマス・シロッコ【品質部隊長】', icon: '🌪️' },
-  gato: { name: 'アナベル・ガトー【配信部隊長】', icon: '💥' },
   kai: { name: 'カイ・シデン【rss_collector】', icon: '📡' },
-  oliver: { name: 'オリヴァー・マイ【route_collector】', icon: '🗺️' },
-  shiro: { name: 'シロー・アマダ【spot_collector】', icon: '🔭' },
+  aina: { name: 'アイナ・サハリン【route_collector】', icon: '🗺️' },
+  gato: { name: 'アナベル・ガトー【spot_collector】', icon: '💥' },
   amuro: { name: 'アムロ・レイ【news_writer】', icon: '⚡' },
-  io: { name: 'イオ・フレミング【route_writer】', icon: '🎷' },
-  bernie: { name: 'バーナード・ワイズマン【spot_writer】', icon: '🌄' },
+  shiro: { name: 'シロー・アマダ【route_writer】', icon: '🏔️' },
+  kou: { name: 'コウ・ウラキ【spot_writer】', icon: '🌄' },
   char: { name: 'シャア・アズナブル【quality_checker】', icon: '🔴' },
   mirai: { name: 'ミライ・ヤシマ【scheduler】', icon: '🧭' },
 };
@@ -118,15 +117,15 @@ export async function reportRssCollector(stats) {
 
 export async function reportRouteCollector(stats) {
   const { stored, fetched, fallback } = stats;
-  await sendDiscord('daily', fmt(CHARS.oliver,
-    `ルートDB、解析完了です。\n理論上は${fetched}件中${stored}件が最適ルートになるはずです。${fallback > 0 ? `\nフォールバック${fallback}件含む。` : ''}\nあとは現場（パイロット）が証明するだけだ……`
+  await sendDiscord('daily', fmt(CHARS.aina,
+    `ルートデータ、${fetched}件から${stored}件を選びました。${fallback > 0 ? `\nフォールバック${fallback}件含みます。` : ''}\nシローに渡します。……きっと、いい記事にしてくれるはずです。`
   ));
 }
 
 export async function reportSpotCollector(stats) {
   const { stored, area, fallbackMode } = stats;
-  await sendDiscord('daily', fmt(CHARS.shiro,
-    `${area}エリア、調査完了しました！\n${stored}件のスポット情報、持ち帰ります！${fallbackMode ? '\n※フォールバックモードで実行しました。' : ''}\n座標確認、スポット登録、完了です！`
+  await sendDiscord('daily', fmt(CHARS.gato,
+    `ソロモンよ、私は帰ってきた。\n${area}エリア、${stored}件確保した。${fallbackMode ? '\n……フォールバックを余儀なくされたが、任務は完遂した。' : ''}\nコウ・ウラキ、これを記事にできるか？\n貴様の腕を見せてみろ。`
   ));
 }
 
@@ -139,15 +138,15 @@ export async function reportNewsWriter(stats) {
 
 export async function reportRouteWriter(stats) {
   const { passed, rejected } = stats;
-  await sendDiscord('daily', fmt(CHARS.io,
-    `このルート記事を読むとき、疾走感が聞こえたら俺が書いた記事だと思え。\n${passed}本仕上げた。${rejected > 0 ? `${rejected}本は弾いた。` : ''}\n最高にスリリングな旅をさせてやるよ！`
+  await sendDiscord('daily', fmt(CHARS.shiro,
+    `ルート記事、${passed}本書き上げました。${rejected > 0 ? `${rejected}本は弾きました。` : ''}\nアイナのデータは正確で、書きやすかったです。\n……俺は生き延びて、このルートの魅力を伝える！`
   ));
 }
 
 export async function reportSpotWriter(stats) {
   const { passed, area } = stats;
-  await sendDiscord('daily', fmt(CHARS.bernie,
-    `${area}エリア、書き上げました！\n${passed}本です。嘘じゃないぜ、本当にいい場所ばかりなんだ。\nシロー（コウ）が集めてくれたデータ、使いやすかったです。`
+  await sendDiscord('daily', fmt(CHARS.kou,
+    `${area}エリアのスポット記事、${passed}本書き上げました！\n……認めたくないですけど、ガトー大尉のデータはいいスポットばかりでした。\n次は僕が先に見つけます。絶対に。`
   ));
 }
 
