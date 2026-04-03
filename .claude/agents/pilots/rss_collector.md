@@ -33,6 +33,30 @@ pilot_context.watch_points → 今回特に注意すること
 
 ### Level 3: フィルタリング
 
+### Level 3.5: 言語・jp_relevance判定
+
+#### 言語判定
+ソースがバイク系メディア（英語）の場合はsource_lang = 'en'を付与する。
+それ以外はsource_lang = 'ja'。
+
+#### jp_relevance判定（source_lang = 'en'の場合のみ）
+タイトル・本文から以下のキーワードを検出してフラグを立てる。
+
+```
+jp_relevance = 'high'
+→ Japan / 日本 / 国内 / 国内導入 / 日本発売 / Asia
+　またはJapanese spec / Japan-spec
+
+jp_relevance = 'low'
+→ US only / US market / North America only
+　UK only / Europe only / not available in Japan
+　US-spec / European spec
+
+jp_relevance = 'unknown'
+→ 上記いずれも検出されない場合（デフォルト）
+```
+
+
 #### 日付フィルタ
 ```
 published_at < NOW() - INTERVAL '7 days' → 除外
@@ -99,6 +123,8 @@ suppress_genresはtarget_countに余裕がある場合のみ処理する。
   "trust_score": 85,
   "duplicate_hash": "abc123",
   "briefing_week": "2026-W14",
+  "source_lang": "ja",
+  "jp_relevance": "unknown",
   "fetched_at": "2026-04-07T23:00:00Z",
   "status": "pending"
 }

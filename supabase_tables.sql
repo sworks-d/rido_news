@@ -30,6 +30,8 @@ CREATE TABLE news_raw (
   prefecture text,
   area text,
   season text,
+  source_lang text DEFAULT 'ja',
+  jp_relevance text DEFAULT 'unknown' CHECK (jp_relevance IN ('high', 'low', 'unknown')),
   briefing_week text,
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'done', 'error')),
   fetched_at timestamptz DEFAULT now(),

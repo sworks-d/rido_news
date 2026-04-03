@@ -33,6 +33,31 @@ source_type = 'external_rss'のデータのみ処理する。
 priority_genresのジャンルを優先的に処理する。
 suppress_genresのジャンルは後回し・件数が少なくてOK。
 
+### Level 2.5: 英語記事の前処理（source_lang = 'en'の場合）
+
+#### 翻訳方針
+英語のbodyを直訳しない。
+RIDOトーンで自然な日本語の記事として生成する。
+固有名詞（モデル名・メーカー名）は英語のまま使う。
+例：「Ducati Panigale V4」「BMW R 1300 GS」
+
+#### jp_relevanceによる注記ルール
+```
+jp_relevance = 'low' の場合
+→ sectionsの末尾に以下を追加する
+  {
+    "heading": "日本での発売について",
+    "body": "この情報は海外向けの発表です。日本での発売・仕様・価格は未確定の場合があります。国内情報が入り次第、改めてお伝えします。",
+    "quoted_comment": null
+  }
+
+jp_relevance = 'unknown' の場合
+→ 注記なし。ただしtone_notesに「海外情報・日本向け未確認」と記載する
+
+jp_relevance = 'high' の場合
+→ 注記なし。通常通り生成する
+```
+
 ### Level 3: 記事生成
 rido_tone.mdのカテゴリ別温度設定に従い生成する。
 今週のtone_guidanceで微調整する。
