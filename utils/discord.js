@@ -101,6 +101,8 @@ export async function notifyPipelineComplete(hour, stats) {
   ];
   if ((stats.quality?.pendingReview || 0) > 0) {
     lines.push(`\n承認待ちがある。確認してくれ。`);
+  } else {
+    lines.push(`\nまた奴（アムロ）に助けられたな。……認めたくはないが。`);
   }
   await sendDiscord('status', fmt(CHARS.bright, lines.join('\n')));
 }
@@ -111,7 +113,7 @@ export async function notifyPipelineComplete(hour, stats) {
 export async function reportRssCollector(stats) {
   const { passed, fetched, duplicate } = stats;
   await sendDiscord('daily', fmt(CHARS.kai,
-    `おーおー、今日も回ってきたぞ。\n${fetched}件チェックして、${passed}件確保。重複${duplicate}件は除いてある。\n……ま、これだけ拾えりゃ上出来だろ。`
+    `おーおー、今日も回ってきたぞ。\n${fetched}件チェックして、${passed}件確保。重複${duplicate}件は除いてある。\n……ま、これだけ拾えりゃ上出来だろ。\nあの赤い仮面野郎（シャア）に難癖つけられる前に渡しとくか。`
   ));
 }
 
@@ -132,7 +134,7 @@ export async function reportSpotCollector(stats) {
 export async function reportNewsWriter(stats) {
   const { passed, rejected } = stats;
   await sendDiscord('daily', fmt(CHARS.amuro,
-    `見える……トレンドが見えるよ……！\n${passed}本書きました。修正プロンプトなんていりません。\n${rejected > 0 ? `${rejected}本はhookで弾きました。` : '全本通過です。'}\nシャアさんに回します。`
+    `見える……トレンドが見えるよ……！\n${passed}本書きました。修正プロンプトなんていりません。\n${rejected > 0 ? `${rejected}本はhookで弾きました。` : '全本通過です。'}\nシャアさんに回します。\n……今日こそ全本通してもらえるかな。`
   ));
 }
 
@@ -158,8 +160,10 @@ export async function reportQualityChecker(stats) {
   ];
   if (pendingReview > 0) {
     lines.push(`${pendingReview}本は差し戻す。アムロ、書き直せ。`);
+    lines.push(`……貴様の実力はこんなものではないはずだ。`);
   } else {
     lines.push(`当たらなければどうということはない。全本通過だ。`);
+    lines.push(`……アムロ・レイ、今日は認めてやろう。`);
   }
   await sendDiscord('daily', fmt(CHARS.char, lines.join('\n')));
 }
@@ -167,7 +171,7 @@ export async function reportQualityChecker(stats) {
 export async function reportScheduler(stats) {
   const { published, skipped, todayArea } = stats;
   await sendDiscord('daily', fmt(CHARS.mirai,
-    `配信の気流を読みました。\n${todayArea}エリア向け、${published}本を予定通り配信しました。${skipped > 0 ? `${skipped}本はバランス調整でスキップ。` : ''}\n……スケジュール通り、最短航路でサーバーへ届けました。`
+    `配信の気流を読みました。\n${todayArea}エリア向け、${published}本を予定通り配信しました。${skipped > 0 ? `${skipped}本はバランス調整でスキップ。` : ''}\nブライト艦長、報告します。\n……スケジュール通り、最短航路でサーバーへ届けました。`
   ));
 }
 
@@ -187,7 +191,7 @@ export async function notifyLayer1(title, reason, sourceUrl = null) {
 
 export async function notifyAgentError(agent, errorMsg) {
   await sendDiscord('alert', fmt(CHARS.bask,
-    `システムに異常発生。${agent}が落ちた。\n${errorMsg?.slice(0, 200)}\n……落ちはせん、一サーバーたりともな！`
+    `システムに異常発生。${agent}が落ちた。\n${errorMsg?.slice(0, 200)}\n感傷は不要だ。復旧させろ。\n……落ちはせん、一サーバーたりともな！`
   ));
 }
 
@@ -235,7 +239,9 @@ export async function notifyWeeklyReport(stats, briefingWeek) {
     lines.push(`\n来週の提案: ${stats.nextWeekSuggestion}`);
     lines.push(`→ 承認 / 却下 / 修正を求む。`);
   }
-  lines.push(`\nあえて言おう、この配信数では物足りないと！ 来週こそ真の勝利を掴め！`);
+  lines.push(`\nあえて言おう、この配信数では物足りないと！`);
+  lines.push(`アムロよ、シャアよ、アイナよ、ガトーよ。`);
+  lines.push(`諸君らの力を、もっと信じている。来週こそ真の勝利を掴め！`);
   await sendDiscord('briefing', fmt(CHARS.giren, lines.join('\n')));
 }
 
