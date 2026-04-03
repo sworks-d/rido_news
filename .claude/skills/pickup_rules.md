@@ -33,17 +33,18 @@ undefined・null・NULL・tmp・temp・仮
 ```
 ルートスコア
 = (like_count × 3)
-+ (save_count × 2)
 + (view_count × 1)
-+ (is_official ? 10 : 0)
++ (official_flag = true ? 10 : 0)
 
 スポットスコア（全スポットの合計）
-= (spots_with_desc × 5)
-+ (spots_with_photo × 3)
-+ (spots_with_tags × 2)
+= (description IS NOT NULL ? 5 : 0)
++ (photo_url IS NOT NULL ? 3 : 0)
++ (tags IS NOT NULL ? 2 : 0)
 
 最終スコア = ルートスコア + スポットスコア
 ```
+
+※save_countはDBに存在しないため除外。
 同点の場合はcreated_atが新しい方を優先する。
 
 ### 表示件数
@@ -60,23 +61,41 @@ undefined・null・NULL・tmp・temp・仮
 ### フィルタリング条件
 ```
 is_public = true                    必須
+publish_status = 'public'           必須
 description・photo_url・tagsの
 いずれか1つ以上あること
 ```
 
 ### スコアリング
 ```
-= (like_count × 3)
-+ (view_count × 1)
+= (view_count × 1)
 + (description IS NOT NULL ? 5 : 0)
 + (photo_url IS NOT NULL ? 3 : 0)
 + (tags IS NOT NULL ? 2 : 0)
 + (official_flag = true ? 8 : 0)
 ```
 
+※spotsにlike_countは存在しないため除外。
+
 ### エリア判定
 scheduler_rules.mdの曜日×エリア定義を参照する。
+profilesテーブルのareasカラム（text型）を使用する。
+
+```sql
+SELECT COUNT(*) FROM profiles
+WHERE areas ILIKE '%愛知%'
+OR areas ILIKE '%岐阜%'
+OR areas ILIKE '%三重%'
+OR areas ILIKE '%静岡%'
+```
+
 ユーザー数が0の場合は全国フォールバックモードに切り替える。
+
+### エリアフィルタ（spots）
+spotsのprefectureカラムで絞り込む。
+```sql
+WHERE spots.prefecture IN ('愛知県', '岐阜県', '三重県', '静岡県')
+```
 
 ### カテゴリ別上位抽出
 カテゴリ別に上位3件・全体で最大10件を抽出する。
