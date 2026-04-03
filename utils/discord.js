@@ -118,7 +118,7 @@ export async function reportRssCollector(stats) {
 export async function reportRouteCollector(stats) {
   const { stored, fetched, fallback } = stats;
   await sendDiscord('daily', fmt(CHARS.aina,
-    `ルートデータ、${fetched}件から${stored}件を選びました。${fallback > 0 ? `\nフォールバック${fallback}件含みます。` : ''}\nシローに渡します。……きっと、いい記事にしてくれるはずです。`
+    `ルートデータ、${fetched}件から${stored}件を選びました。${fallback > 0 ? `\nフォールバック${fallback}件含みます。` : ''}\nシローに渡します。\n……あなたと私は、立場が違う。でも、同じ道を見ている気がします。`
   ));
 }
 
@@ -139,7 +139,7 @@ export async function reportNewsWriter(stats) {
 export async function reportRouteWriter(stats) {
   const { passed, rejected } = stats;
   await sendDiscord('daily', fmt(CHARS.shiro,
-    `ルート記事、${passed}本書き上げました。${rejected > 0 ? `${rejected}本は弾きました。` : ''}\nアイナのデータは正確で、書きやすかったです。\n……俺は生き延びて、このルートの魅力を伝える！`
+    `ルート記事、${passed}本書き上げました。${rejected > 0 ? `${rejected}本は弾きました。` : ''}\nアイナのデータは……正確で、丁寧で、書きやすかったです。\n彼女が選んだルートには、理由がある気がする。\n俺は生き延びて、その意味を伝え続ける。`
   ));
 }
 
