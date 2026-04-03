@@ -5,6 +5,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { config } from 'dotenv';
+import { runRssCollector } from './agents/rss_collector.js';
 
 config();
 
@@ -75,6 +76,17 @@ export async function logAgentRun(agent, task, status, inputCount, outputCount, 
     });
 
   if (error) console.error(`[Log] ${agent} ログ記録失敗:`, error.message);
+}
+
+// ============================================
+// ユーティリティ
+// ============================================
+function getCurrentBriefingWeek() {
+  const now = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const year = now.getUTCFullYear();
+  const start = new Date(Date.UTC(year, 0, 1));
+  const week = Math.ceil(((now - start) / 86400000 + start.getUTCDay() + 1) / 7);
+  return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
 // ============================================
@@ -151,7 +163,7 @@ async function mainLoop() {
 
     // 収集フェーズ
     await updateAgentStatus('rss_collector', 'running');
-    // await runRssCollector();
+    await runRssCollector(getCurrentBriefingWeek());
     await updateAgentStatus('rss_collector', 'done');
 
     await updateAgentStatus('route_collector', 'running');
