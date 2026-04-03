@@ -4,7 +4,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
 import crypto from 'crypto';
-import { notifyAgentError } from '../utils/discord.js';
+import { notifyAgentError, reportRssCollector } from '../utils/discord.js';
 
 config();
 
@@ -230,5 +230,6 @@ export async function runRssCollector(briefingWeek) {
   }).eq('agent', 'rss_collector');
 
   console.log(`[rss_collector] 完了: ${totalPassed}件格納`);
+  await reportRssCollector({ passed: totalPassed, fetched: totalFetched, duplicate: totalDuplicate });
   return { fetched: totalFetched, passed: totalPassed, duplicate: totalDuplicate };
 }

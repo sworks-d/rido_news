@@ -3,7 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
-import { notifyFallback } from '../utils/discord.js';
+import { notifyFallback, reportSpotCollector } from '../utils/discord.js';
 
 config();
 
@@ -204,5 +204,6 @@ export async function runSpotCollector(briefingWeek, briefing) {
   }).eq('agent', 'spot_collector');
 
   console.log(`[spot_collector] 完了: ${stored}件格納`);
+  await reportSpotCollector({ stored, area: area.label, fallbackMode });
   return { fetched: spots.length, stored, area: area.label, fallbackMode };
 }

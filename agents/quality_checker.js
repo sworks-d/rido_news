@@ -3,7 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
-import { notifyLayer1, notifyAgentError } from '../utils/discord.js';
+import { notifyLayer1, notifyAgentError, reportQualityChecker } from '../utils/discord.js';
 
 config();
 
@@ -372,6 +372,7 @@ export async function runQualityChecker(briefingWeek) {
   }).eq('agent', 'quality_checker');
 
   console.log(`[quality_checker] 完了: 承認${approved} / 自動修正${autoFixed} / 審査待ち${pendingReview}`);
+  await reportQualityChecker({ approved, autoFixed, pendingReview });
   return { approved, autoFixed, pendingReview };
 }
 

@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
+import { reportRouteWriter } from '../utils/discord.js';
 config();
 
 const supabase = createClient(
@@ -179,5 +180,6 @@ export async function runRouteWriter(briefingWeek) {
   }).eq('agent', 'route_writer');
 
   console.log(`[route_writer] 完了: ${passed}記事生成（${rawRoutes.length}ルートまとめ）`);
+  await reportRouteWriter({ passed, rejected });
   return { passed, rejected };
 }

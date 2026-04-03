@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
+import { reportNewsWriter } from '../utils/discord.js';
 
 config();
 
@@ -239,5 +240,6 @@ export async function runNewsWriter(briefingWeek) {
   }).eq('agent', 'news_writer');
 
   console.log(`[news_writer] 完了: ${passed}件格納 / ${rejected}件却下`);
+  await reportNewsWriter({ passed, rejected });
   return { generated, passed, rejected };
 }

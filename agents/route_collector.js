@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
+import { reportRouteCollector } from '../utils/discord.js';
 
 config();
 
@@ -242,5 +243,6 @@ export async function runRouteCollector(briefingWeek, briefing) {
   }).eq('agent', 'route_collector');
 
   console.log(`[route_collector] 完了: ${stored}件格納`);
+  await reportRouteCollector({ stored, fetched: routes.length, fallback: fallback.length });
   return { fetched: routes.length, stored, fallback: fallback.length };
 }

@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
+import { reportSpotWriter } from '../utils/discord.js';
 config();
 
 const supabase = createClient(
@@ -208,5 +209,6 @@ export async function runSpotWriter(briefingWeek) {
   }).eq('agent', 'spot_writer');
 
   console.log(`[spot_writer] 完了: ${passed}記事生成（${rawSpots.length}スポットまとめ）`);
+  await reportSpotWriter({ passed, area: areaLabel });
   return { passed, rejected };
 }

@@ -3,6 +3,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { config } from 'dotenv';
+import { reportScheduler } from '../utils/discord.js';
 
 config();
 
@@ -186,5 +187,6 @@ export async function runScheduler(briefingWeek) {
   }).eq('agent', 'scheduler');
 
   console.log(`[scheduler] 完了: 配信${published}件 / スキップ${skipped}件`);
+  await reportScheduler({ published, skipped, todayArea: todayArea.label });
   return { published, skipped, byTab: publishedByTab, todayArea: todayArea.label };
 }
