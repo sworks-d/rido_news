@@ -8,6 +8,8 @@ import { config } from 'dotenv';
 import { runRssCollector } from './agents/rss_collector.js';
 import { runNewsWriter } from './agents/news_writer.js';
 import { runQualityChecker } from './agents/quality_checker.js';
+import { runRouteCollector } from './agents/route_collector.js';
+import { runSpotCollector } from './agents/spot_collector.js';
 import { runScheduler } from './agents/scheduler.js';
 
 config();
@@ -170,11 +172,11 @@ async function mainLoop() {
     await updateAgentStatus('rss_collector', 'done');
 
     await updateAgentStatus('route_collector', 'running');
-    // await runRouteCollector();
+    await runRouteCollector(getCurrentBriefingWeek(), null);
     await updateAgentStatus('route_collector', 'done');
 
     await updateAgentStatus('spot_collector', 'running');
-    // await runSpotCollector();
+    await runSpotCollector(getCurrentBriefingWeek(), null);
     await updateAgentStatus('spot_collector', 'done');
 
     // 生成フェーズ
