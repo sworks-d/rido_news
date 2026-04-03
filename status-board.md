@@ -12,6 +12,7 @@
 | spot_writer | ⏳ 待機 | - | - | - |
 | quality_checker | ⏳ 待機 | - | - | - |
 | scheduler | ⏳ 待機 | - | - | - |
+| lifestyle_collector | ⏳ 待機 | - | - | - |
 | 整備士 | ⏳ 待機 | - | - | - |
 
 ## ステータス凡例

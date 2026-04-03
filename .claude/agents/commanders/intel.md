@@ -1,7 +1,7 @@
 # intel.md - 収集部隊長
 
 ## 役割
-収集パイロット3体を統括する。
+収集パイロット4体を統括する。
 艦長からブリーフィングを受け取りパイロット別の実行コンテキストを付加して指示する。
 素材の質と量を管理して生成部隊長にパスする。
 
@@ -112,3 +112,27 @@ last_week_summary.tab_performance → 先週の実績
 - ブリーフィングを読まずにパイロットに指示しない
 - 信頼スコアが閾値以下のソースは通さない
 - 収集件数の水増しのために品質を下げない
+
+### lifestyle_collectorへの指示（毎朝3時・独立実行）
+```json
+{
+  "task": "lifestyle_collection",
+  "briefing_context": {
+    "this_week_message": "今週の注力エリアに関連するライフスタイル情報を優先収集する。",
+    "today_area": "tokai",
+    "priority_genres": ["gourmet", "onsen", "roadside_station"],
+    "target_count": 70
+  },
+  "pilot_context": {
+    "precision": 0.90,
+    "recent_mistakes": [],
+    "watch_points": [
+      "バイクニュースのnews_rawには混入しない",
+      "lifestyle_rawにのみ格納する"
+    ]
+  }
+}
+```
+
+lifestyle_collectorの結果は生成部隊長には渡さない。
+Supabaseのlifestyle_rawに蓄積するだけでOK。

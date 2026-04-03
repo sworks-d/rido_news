@@ -157,7 +157,8 @@ INSERT INTO agent_status (agent, status) VALUES
   ('spot_writer', 'waiting'),
   ('quality_checker', 'waiting'),
   ('scheduler', 'waiting'),
-  ('mechanic', 'waiting');
+  ('mechanic', 'waiting'),
+  ('lifestyle_collector', 'waiting');
 
 -- ============================================
 -- 6. agent_decisions
@@ -299,3 +300,40 @@ CREATE POLICY "app_read_published_articles"
 -- 既存テーブルへの書き込み防止ポリシー
 -- （service_roleからのみ操作可能・anonとauthenticatedは読み取りのみ）
 -- ※既存のRLSポリシーはそのまま維持する
+
+-- ============================================
+-- 12. lifestyle_raw
+-- グルメ・トラベル・キャンプ等のコンテンツ蓄積
+-- 今はスポット・ルート記事の参考情報として使う
+-- 将来のWebメディア化時に独立記事として配信できる
+-- ============================================
+CREATE TABLE lifestyle_raw (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_type text NOT NULL DEFAULT 'lifestyle',
+  genre text NOT NULL CHECK (genre IN (
+    'gourmet', 'travel', 'camp', 'onsen',
+    'roadside_station', 'outdoor', 'local', 'other'
+  )),
+  source_url text,
+  source_name text,
+  title text NOT NULL,
+  body text,
+  tags text[],
+  area text,
+  prefecture text,
+  duplicate_hash text UNIQUE,
+  trust_score integer,
+  media_ready boolean DEFAULT false,
+  briefing_week text,
+  status text NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'referenced', 'media_candidate', 'published')),
+  fetched_at timestamptz DEFAULT now(),
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX idx_lifestyle_raw_genre ON lifestyle_raw(genre);
+CREATE INDEX idx_lifestyle_raw_area ON lifestyle_raw(area);
+CREATE INDEX idx_lifestyle_raw_prefecture ON lifestyle_raw(prefecture);
+CREATE INDEX idx_lifestyle_raw_status ON lifestyle_raw(status);
+
+ALTER TABLE lifestyle_raw ENABLE ROW LEVEL SECURITY;
