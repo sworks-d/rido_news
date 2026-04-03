@@ -33,119 +33,72 @@
 
 ---
 
-## 1. グルメ（genre: gourmet）
+## 有効ソース（疎通確認済み）
 
-| ソース | RSS URL | trust_score | 備考 |
+| ジャンル | ソース | RSS URL | trust_score |
 |---|---|---|---|
-| 食べログニュース | https://award.tabelog.com/rss | 85 | 受賞・注目店情報 |
-| ぐるなびニュース | https://news.gnavi.co.jp/rss/ | 80 | 飲食トレンド |
-| Rettyニュース | https://retty.me/rss/ | 75 | ユーザー口コミ系 |
+| camp | CAMP HACK | https://camphack.nap-camp.com/feed/ | 85 |
+| outdoor | BE-PAL | https://www.bepal.net/feed/ | 85 |
+| local | まっぷるトラベルガイド | https://www.mapple.net/feed/ | 80 |
 
 ---
 
-## 2. トラベル（genre: travel）
+## 対象外ソース（疎通確認結果）
 
-| ソース | RSS URL | trust_score | 備考 |
-|---|---|---|---|
-| じゃらんニュース | https://www.jalan.net/news/rss/ | 85 | 旅行・宿泊情報 |
-| 旅行読売 | https://www.ryoko-yomiuri.co.jp/rss/ | 80 | 老舗旅行誌 |
-| るるぶ旅行情報 | https://rurubu.jp/rss/ | 80 | 観光情報 |
-
----
-
-## 3. キャンプ（genre: camp）
-
-| ソース | RSS URL | trust_score | 備考 |
-|---|---|---|---|
-| CAMP HACK | https://camphack.nap-camp.com/feed/ | 85 | キャンプ専門メディア |
-| hinataキャンプ | https://hinata.me/feed/ | 80 | キャンプ・アウトドア |
-| ナチュラムアウトドア情報 | https://blog.naturum.ne.jp/feed/ | 75 | アウトドア用品・情報 |
-
----
-
-## 4. 温泉（genre: onsen）
-
-| ソース | RSS URL | trust_score | 備考 |
-|---|---|---|---|
-| 温泉まるごと | https://onsen-marugoto.com/feed/ | 80 | 温泉専門情報 |
-| じゃらん温泉特集 | https://www.jalan.net/onsen/rss/ | 85 | 宿泊込み温泉情報 |
+| ソース | URL | 結果 |
+|---|---|---|
+| 食べログニュース | https://award.tabelog.com/rss | 404 |
+| Retty | https://retty.me/rss/ | 404 |
+| るるぶ | https://rurubu.jp/rss/ | 404 |
+| hinataキャンプ | https://hinata.me/feed/ | 404 |
+| ナチュラム | https://blog.naturum.ne.jp/feed/ | 404 |
+| じゃらん温泉 | https://www.jalan.net/onsen/rss/ | 404 |
+| 道の駅公式 | https://www.michi-no-eki.jp/rss/ | 404 |
+| OUTDOOR DAY | https://outdoorday.jp/feed/ | 404 |
+| 観光庁 | https://www.mlit.go.jp/kankocho/rss/ | 404 |
+| ぐるなびニュース | https://news.gnavi.co.jp/rss/ | ERROR |
+| 旅行読売 | https://www.ryoko-yomiuri.co.jp/rss/ | ERROR |
+| 温泉まるごと | https://onsen-marugoto.com/feed/ | ERROR |
+| 道の駅ガイド | https://michinoeki-guide.com/feed/ | ERROR |
+| PEAKS | https://www.peaks.media/feed/ | ERROR |
+| じゃらんニュース | https://www.jalan.net/news/rss/ | TIMEOUT |
 
 ---
 
-## 5. 道の駅（genre: roadside_station）
+## 現状の課題と対応方針
 
-| ソース | RSS URL | trust_score | 備考 |
-|---|---|---|---|
-| 道の駅公式（国交省） | https://www.michi-no-eki.jp/rss/ | 90 | 公式・全国網羅 |
-| 道の駅ガイド | https://michinoeki-guide.com/feed/ | 75 | 口コミ・レポート |
+有効ソースが3件（camp・outdoor・local）のみ。
+gourmet・travel・onsen・roadside_stationのカバーが不足している。
 
----
+### 追加確認候補
+以下はRSS URLの別パスを試す価値がある。
 
-## 6. アウトドア（genre: outdoor）
+```
+じゃらんニュース → https://www.jalan.net/news/rss.xml
+ぐるなび → https://r.gnavi.co.jp/rss/
+道の駅 → https://www.michi-no-eki.jp/stations/rss
+```
 
-| ソース | RSS URL | trust_score | 備考 |
-|---|---|---|---|
-| BE-PAL | https://www.bepal.net/feed/ | 85 | 老舗アウトドア誌 |
-| PEAKS | https://www.peaks.media/feed/ | 80 | 登山・アウトドア |
-| OUTDOOR DAY | https://outdoorday.jp/feed/ | 75 | アウトドア全般 |
-
----
-
-## 7. 地域情報（genre: local）
-
-| ソース | RSS URL | trust_score | 備考 |
-|---|---|---|---|
-| 観光庁ニュース | https://www.mlit.go.jp/kankocho/rss/ | 90 | 公式観光情報 |
-| まっぷるトラベルガイド | https://www.mapple.net/feed/ | 80 | 地域観光情報 |
+### 代替手段（Ph2以降で検討）
+- Google News RSS（キーワード指定）
+  例：https://news.google.com/rss/search?q=道の駅+ツーリング&hl=ja
+- 地域観光協会の個別RSS
 
 ---
 
 ## 収集設定
 
 ### 実行間隔
-1日1回（毎朝3時・バイクニュース収集の前）
+1日1回（毎朝3時）
 
 ### 1ソースあたりの最大取得件数
 10件
 
 ### 全体の最大格納件数（1実行あたり）
-70件
+30件（有効ソース3件×10件）
 
 ### 記事の有効期限
-30日以内（バイクニュースより長め・コンテンツとして蓄積するため）
-
----
-
-## spot_writer・route_writerでの使い方
-
-生成時に同じエリアのlifestyle_rawを検索して参考情報として使う。
-
-```
-今日のエリア = "tokai"（東海）
-        ↓
-lifestyle_rawからprefectureが愛知・岐阜・三重・静岡の
-直近30日のデータを取得
-        ↓
-スポット記事の「行くときのポイント」や
-ルート記事の「立ち寄りスポット」に自然に組み込む
-```
-
-使用した記事はstatus = 'referenced'に更新する。
-
----
-
-## 将来のメディア化判断基準
-
-以下に該当する記事はmedia_ready = trueを付与する。
-
-```
-同じエリア・ジャンルの記事が10件以上蓄積された
-referenced回数が3回以上
-CTR（将来計測）が高い
-```
-
-media_ready = trueの記事が30件以上蓄積されたジャンルは
-メディア化の候補として参謀がリーダーに提案する。
+30日以内
 
 ---
 
@@ -155,7 +108,6 @@ media_ready = trueの記事が30件以上蓄積されたジャンルは
 |---|---|
 | 404 | スキップ・部隊長にログ報告 |
 | タイムアウト | 3回リトライ後にスキップ |
-| 403 | スキップ・部隊長にアラート |
 | 連続3回エラー | 部隊長経由でDiscordにアラート |
 
 ---

@@ -52,7 +52,7 @@
 |---|---|---|---|
 | Total Motorcycle | https://www.totalmotorcycle.com/feed/ | ✅ | 全メーカー・モデル情報豊富 |
 | Motorcycles.News | https://www.motorcycles.news/en/feed/ | ✅ | 欧州メーカー情報が強い |
-| RideApart | https://www.rideapart.com/rss/articles/all | 要確認 | 北米・全メーカー網羅 |
+| RideApart | https://www.rideapart.com/rss/articles/all | ✅ | 北米・全メーカー網羅 |
 
 ※Motorcycle News (MCN) は404のため対象外。
 
