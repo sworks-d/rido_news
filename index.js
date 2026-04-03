@@ -10,6 +10,8 @@ import { runNewsWriter } from './agents/news_writer.js';
 import { runQualityChecker } from './agents/quality_checker.js';
 import { runRouteCollector } from './agents/route_collector.js';
 import { runSpotCollector } from './agents/spot_collector.js';
+import { runRouteWriter } from './agents/route_writer.js';
+import { runSpotWriter } from './agents/spot_writer.js';
 import { runScheduler } from './agents/scheduler.js';
 
 config();
@@ -185,11 +187,11 @@ async function mainLoop() {
     await updateAgentStatus('news_writer', 'done');
 
     await updateAgentStatus('route_writer', 'running');
-    // await runRouteWriter();
+    await runRouteWriter(getCurrentBriefingWeek());
     await updateAgentStatus('route_writer', 'done');
 
     await updateAgentStatus('spot_writer', 'running');
-    // await runSpotWriter();
+    await runSpotWriter(getCurrentBriefingWeek());
     await updateAgentStatus('spot_writer', 'done');
 
     // 品質フェーズ
