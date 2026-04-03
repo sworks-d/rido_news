@@ -136,7 +136,7 @@ async function mainLoop() {
     console.log('[Scheduler] ライフスタイル収集開始');
     await updateAgentStatus('lifestyle_collector', 'running');
 
-    // await runLifestyleCollector();
+    // [Ph2以降] await runLifestyleCollector(); // ソースが揃ったら有効化
 
     await updateAgentStatus('lifestyle_collector', 'done');
     console.log('[Scheduler] ライフスタイル収集完了');
