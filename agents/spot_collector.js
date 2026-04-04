@@ -168,6 +168,7 @@ export async function runSpotCollector(briefingWeek, briefing) {
       tags: spot.tags || [],
       prefecture: spot.prefecture,
       area: area.area,
+      thumbnail_url: spot.photo_url || (spot.photo_urls && spot.photo_urls[0]) || null,
       fallback_mode: fallbackMode,
       source_lang: 'ja',
       jp_relevance: 'high',

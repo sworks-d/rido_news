@@ -177,6 +177,7 @@ export async function runSpotWriter(briefingWeek) {
         tone_score: article.tone_score,
         tone_notes: article.tone_notes,
         area,
+        thumbnail_url: raw.thumbnail_url || null,
         layer1_result: 'pending',
         status: 'pending',
         briefing_week: briefingWeek,

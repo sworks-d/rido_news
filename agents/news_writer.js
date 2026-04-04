@@ -197,6 +197,7 @@ export async function runNewsWriter(briefingWeek) {
         tone_notes: article.tone_notes,
         source_url: raw.source_url,
         source_name: raw.source_name,
+        thumbnail_url: raw.thumbnail_url || null,
         layer1_result: 'pending',
         status: 'pending',
         briefing_week: briefingWeek,

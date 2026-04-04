@@ -58,6 +58,29 @@ const JP_HIGH_KEYWORDS = [
 ];
 
 // ============================================
+// 画像URL抽出
+// ============================================
+function extractImageUrl(xml, description) {
+  // media:thumbnail
+  const mediaThumbnail = xml.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i);
+  if (mediaThumbnail) return mediaThumbnail[1];
+
+  // enclosure
+  const enclosure = xml.match(/<enclosure[^>]+url=["']([^"']+\.(jpg|jpeg|png|webp))["']/i);
+  if (enclosure) return enclosure[1];
+
+  // description内のimg src
+  const imgSrc = description?.match(/<img[^>]+src=["']([^"']+\.(jpg|jpeg|png|webp))["']/i);
+  if (imgSrc) return imgSrc[1];
+
+  // og:image
+  const ogImage = xml.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+  if (ogImage) return ogImage[1];
+
+  return null;
+}
+
+// ============================================
 // RSSフェッチ
 // ============================================
 async function fetchRSS(source) {
@@ -194,6 +217,7 @@ export async function runRssCollector(briefingWeek) {
           body: item.description?.slice(0, 2000) || '',
           trust_score: source.trust_score,
           duplicate_hash: hash,
+          thumbnail_url: extractImageUrl(xml, item.description),
           source_lang: source.lang,
           jp_relevance: jpRelevance,
           briefing_week: briefingWeek,

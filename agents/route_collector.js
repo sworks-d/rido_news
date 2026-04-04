@@ -204,6 +204,7 @@ export async function runRouteCollector(briefingWeek, briefing) {
       score: route.score,
       official_flag: route.official_flag || false,
       priority_tag_match: route.priority_tag_match || false,
+      thumbnail_url: route.thumbnail_url || null,
       tags: route.tags || [],
       prefecture: route.prefecture,
       season: route.season,
