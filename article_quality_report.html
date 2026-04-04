@@ -1,0 +1,168 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RIDO 記事クオリティ確認</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f0f10;color:#e8e6e0;font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:14px;line-height:1.7;padding:32px 16px 64px}
+.header{margin-bottom:32px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:16px}
+.header h1{font-size:20px;font-weight:600;color:#fff;margin-bottom:4px}
+.header p{color:#5a5855;font-size:11px;font-family:monospace}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:20px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+.card{background:#17171a;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:22px}
+.card.error{color:#e85c4a;font-family:monospace;font-size:12px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.card-label{font-size:10px;font-family:monospace;color:#2ec4a4;letter-spacing:.1em;text-transform:uppercase}
+.tone-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;color:#0f0f10}
+.card-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.4}
+.card-summary{color:#8f8d87;font-size:13px;margin-bottom:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid rgba(46,196,164,0.4)}
+.theme{font-size:11px;color:#e8a842;margin-bottom:8px;font-family:monospace}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.tag{font-size:11px;padding:2px 7px;border-radius:4px;background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.25);color:#7c6af7}
+.index-box{font-size:11px;color:#5a5855;margin-bottom:14px;font-family:monospace}
+.index-label{color:#4a9ef8}
+.sections{border-top:1px solid rgba(255,255,255,0.06);padding-top:14px}
+.section{margin-bottom:14px}
+.s-heading{font-size:12px;font-weight:600;color:#4a9ef8;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.s-body{font-size:13px;color:#c8c6c0;line-height:1.8}
+.quote{margin-top:6px;padding:8px 12px;background:rgba(232,168,66,0.06);border:1px solid rgba(232,168,66,0.2);border-radius:6px;font-size:12px;color:#e8a842;font-style:italic}
+.link-badge{margin-top:6px;font-size:11px;color:#52c97a;font-family:monospace;padding:4px 8px;background:rgba(82,201,122,0.06);border:1px solid rgba(82,201,122,0.2);border-radius:4px;display:inline-block}
+.link-badge.external{color:#4a9ef8;background:rgba(74,158,248,0.06);border-color:rgba(74,158,248,0.2);text-decoration:none}
+.tone-notes{margin-top:10px;font-size:11px;color:#5a5855;font-family:monospace}
+</style></head><body>
+<div class="header"><h1>RIDO 記事クオリティ確認</h1><p>生成日時: 2026/4/3 20:25:31 / model: claude-haiku-4-5</p></div>
+<div class="grid"><div class="card">
+    <div class="card-header">
+      <span class="card-label">バイクニュース（日本語）</span>
+      <span class="tone-badge" style="background:#52c97a">トーン 4/5</span>
+    </div>
+    <div class="card-title">カワサキ、新型Z900RS 2026年モデルを発表</div>
+    <div class="card-summary">カワサキが2026年モデルのZ900RSを発表。エンジンと電子制御システムを刷新し、トラクションコントロールの精度が向上。3色のカラーバリエーションを用意し、価格は152万9000円で2026年2月14日の発売予定。</div>
+    
+    <div class="tags"><span class="tag">カワサキ</span><span class="tag">Z900RS</span><span class="tag">新型バイク</span></div>
+    <div class="index-box"><span class="index-label">目次</span> h1 / h2 / h3 / 引用元</div>
+    <div class="sections">
+    <div class="section">
+      <div class="s-heading">カワサキ、Z900RS 2026年モデルを発表</div>
+      <div class="s-body">カワサキは2026年モデルのZ900RSを発表した。新型モデルではエンジンと電子制御システムが刷新され、より洗練された性能を実現している。発売予定日は2026年2月14日。</div>
+      
+      
+    </div>
+    <div class="section">
+      <div class="s-heading">進化した制御システムとパワートレイン</div>
+      <div class="s-body">今回のモデルチェンジではトラクションコントロールの精度が向上しており、より安定した走行性能が期待できる。エンジンの改良により、乗り手がより快適にバイクを操れるようになった。</div>
+      
+      
+    </div>
+    <div class="section">
+      <div class="s-heading">カラーバリエーションと価格</div>
+      <div class="s-body">カラーバリエーションは3色展開で、それぞれのニーズに合わせた選択肢を提供している。価格は152万9000円となっており、同クラスのネイキッドバイクとしての競争力を備えている。</div>
+      
+      
+    </div>
+    <div class="section">
+      <div class="s-heading">引用元</div>
+      <div class="s-body">この記事は[ソース名]の記事を元に作成しました。</div>
+      
+      <a class="link-badge external" href="[source_url]" target="_blank">🔗 引用元を見る</a>
+    </div></div>
+    <div class="tone-notes">📝 断定を避け、「期待できる」「用意している」など可能性の表現を使用。ランキングや命令調はなし。感嘆符は使用していない。</div>
+  </div>
+<div class="card">
+    <div class="card-header">
+      <span class="card-label">バイクニュース（英語→日本語・海外情報）</span>
+      <span class="tone-badge" style="background:#52c97a">トーン 4/5</span>
+    </div>
+    <div class="card-title">ドゥカティ、パニガーレV4チェンテニアルエディション発表</div>
+    <div class="card-summary">ドゥカティが創立100周年を記念した特別仕様のパニガーレV4を発表しました。世界限定100台で、価格は45,000ドル。米国とヨーロッパ市場での販売となります。</div>
+    
+    <div class="tags"><span class="tag">ドゥカティ</span><span class="tag">パニガーレV4</span><span class="tag">限定モデル</span></div>
+    <div class="index-box"><span class="index-label">目次</span> h1 / h2 / h3 / 引用元</div>
+    <div class="sections">
+    <div class="section">
+      <div class="s-heading">創立100周年を記念した特別仕様</div>
+      <div class="s-body">ドゥカティがパニガーレV4の特別仕様モデル「チェンテニアルエディション」を発表しました。同社の創立100周年を記念した限定モデルとなり、世界中でわずか100台の製造にとどまる見込みです。</div>
+      
+      
+    </div>
+    <div class="section">
+      <div class="s-heading">価格と販売地域</div>
+      <div class="s-body">チェンテニアルエディションの価格は45,000ドルの設定となっています。販売地域は米国とヨーロッパの市場に限定され、その他の地域での販売計画は現在のところ発表されていません。</div>
+      
+      
+    </div>
+    <div class="section">
+      <div class="s-heading">日本での発売について</div>
+      <div class="s-body">この情報は海外向けの発表です。日本での発売・仕様・価格は未確定の場合があります。</div>
+      
+      
+    </div>
+    <div class="section">
+      <div class="s-heading">引用元</div>
+      <div class="s-body">この記事はDucatiの公式発表を元に作成しました。</div>
+      
+      <a class="link-badge external" href="https://www.ducati.com/" target="_blank">🔗 引用元を見る</a>
+    </div></div>
+    <div class="tone-notes">📝 断定を避け、可能性や情報の限定性を示す表現を使用。感嘆符なし。ランキングや命令調なし。</div>
+  </div>
+<div class="card">
+    <div class="card-header">
+      <span class="card-label">スポット特集（まとめ）</span>
+      <span class="tone-badge" style="background:#52c97a">トーン 4/5</span>
+    </div>
+    <div class="card-title">東海の絶景と歴史を巡るツーリング</div>
+    <div class="card-summary">愛知県奥三河エリアの魅力的なスポットを3つ厳選。雄大な山々の眺望、歴史ある神社、地元グルメが揃った道の駅。バイクで訪れたい東海の推し地を集めました。詳細はアプリでチェック。</div>
+    <div class="theme">🎯 エリア特集</div>
+    <div class="tags"><span class="tag">東海</span><span class="tag">絶景</span><span class="tag">ツーリング</span><span class="tag">道の駅</span><span class="tag">愛知県</span></div>
+    <div class="index-box"><span class="index-label">目次</span> 茶臼山高原 / 鳳来寺山 / 道の駅 したら</div>
+    <div class="sections">
+    <div class="section">
+      <div class="s-heading">茶臼山高原</div>
+      <div class="s-body">標高1415mから望む南アルプスの雄大な景色は息をのむほど。春の芝桜シーズンは特に美しく、多くのライダーがバイクを停めて景色に浸ります。天気の良い日のツーリングに最適なスポットです。</div>
+      <div class="quote">▶ 「標高1415mの高原で、晴れた日には南アルプスまで見渡せる。4月下旬から5月初旬は芝桜が満開になって、バイクを停めてぼーっとしてしまう。」</div>
+      <div class="link-badge">📍 アプリで見る → spot/spot-001</div>
+    </div>
+    <div class="section">
+      <div class="s-heading">鳳来寺山</div>
+      <div class="s-body">古い社が鎮座する山頂への参拝は、ヘルメット片手での石段登りがちょっと大変。ただそこから広がる眺めは苦労に見合う価値があります。歴史と自然を感じるツーリングに。</div>
+      <div class="quote">▶ 「長い石段を登った先に古い社がある。ヘルメットを持ちながら登るのがちょっとしんどいけど、上からの眺めは格別だった。」</div>
+      <div class="link-badge">📍 アプリで見る → spot/spot-002</div>
+    </div>
+    <div class="section">
+      <div class="s-heading">道の駅 したら</div>
+      <div class="s-body">設楽ダム近くの立ち寄りスポット。奥三河の特産品が充実していて、評判のソフトクリームは休憩の相棒。ライダー多くの駐輪場広めは、グループツーリングにも◎。</div>
+      <div class="quote">▶ 「設楽ダムの近くにある道の駅。奥三河の特産品が揃ってて、ソフトクリームが絶品。ライダーが多くて駐輪場も広い。」</div>
+      <div class="link-badge">📍 アプリで見る → spot/spot-003</div>
+    </div></div>
+    <div class="tone-notes">📝 ライダーの声を活かしながら、親しみやすく誘導的にならない表現を心がけた</div>
+  </div>
+<div class="card">
+    <div class="card-header">
+      <span class="card-label">ルート特集（まとめ）</span>
+      <span class="tone-badge" style="background:#52c97a">トーン 4/5</span>
+    </div>
+    <div class="card-title">峠越えから海岸線まで、東海の絶景ルート3選</div>
+    <div class="card-summary">この週末、東海エリアで走られているのは山越えで南アルプスを望むルート、海岸線を贅沢に走るルート、そして飛騨の古い町並みを訪ねるルートの3つ。それぞれのルートで、ライダーたちが見つけた特別な瞬間があります。</div>
+    <div class="theme">🎯 今週のルート</div>
+    <div class="tags"><span class="tag">ツーリング</span><span class="tag">春</span><span class="tag">東海</span><span class="tag">景観ライド</span></div>
+    <div class="index-box"><span class="index-label">目次</span> 奥三河から天竜川沿いルート / 伊勢志摩一周ルート / 岐阜・飛騨古川ルート</div>
+    <div class="sections">
+    <div class="section">
+      <div class="s-heading">奥三河から天竜川沿いルート</div>
+      <div class="s-body">愛知から静岡へと続く185kmのロングライド。峠越えの先に南アルプスが現れる瞬間が、このルートの最大の魅力です。山々の壮大な景色を求める方に特におすすめ。詳細はアプリで確認できます。</div>
+      <div class="quote">▶ 「峠を越えたところで視界が開けて、南アルプスが見えた。あの瞬間のために走ってる気がする。」</div>
+      <div class="link-badge">🗺️ アプリで見る → route/route-001</div>
+    </div>
+    <div class="section">
+      <div class="s-heading">伊shadows志摩一周ルート</div>
+      <div class="s-body">三重県の海岸線を一周する210kmのルート。牡蠣小屋での立ち寄りなど、ローカルグルメも楽しみながら走れます。海を眺めながらのロングライドは、気持ちよさが格別です。</div>
+      <div class="quote">▶ 「海岸線をずっと走れるのが気持ちいい。牡蠣小屋に寄ったのも最高だった。」</div>
+      <div class="link-badge">🗺️ アプリで見る → route/route-002</div>
+    </div>
+    <div class="section">
+      <div class="s-heading">岐阜・飛騨古川ルート</div>
+      <div class="s-body">白川郷へ向かう156kmのルート。白川郷手前の走りやすい道が特に評判です。観光客が少ない早朝の走行がおすすめ。飛騨の風情を感じながら走ることができます。</div>
+      <div class="quote">▶ 「白川郷の手前の道が特に良かった。観光客が少ない早朝に走るのがおすすめ。」</div>
+      <div class="link-badge">🗺️ アプリで見る → route/route-003</div>
+    </div></div>
+    <div class="tone-notes">📝 各セクションは推奨字数内に調整。命令調は避け、ライダーコメントは改変なし。詳細情報はアプリへの導線を明確に。</div>
+  </div></div>
+</body></html>

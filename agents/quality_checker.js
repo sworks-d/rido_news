@@ -217,13 +217,14 @@ function runHooks(article, raw) {
   if ((article.summary?.length || 0) > 250) {
     return { pass: false, reason: 'hook_3: summaryが250字超' };
   }
-  if (article.content_type === 'route' && !article.route_id) {
+  if (article.content_type === 'route' && article.source_type !== 'app_db' && !article.route_id) {
     return { pass: false, reason: 'hook_4: route_idがnull' };
   }
-  if (article.content_type === 'spot' && !article.spot_id) {
+  if (article.content_type === 'spot' && article.source_type !== 'app_db' && !article.spot_id) {
     return { pass: false, reason: 'hook_5: spot_idがnull' };
   }
-  if ((article.index_items?.length || 0) !== (article.sections?.length || 0)) {
+  const contentSections = (article.sections || []).filter(s => s.heading !== '引用元');
+  if ((article.index_items?.length || 0) !== contentSections.length) {
     return { pass: false, reason: 'hook_7: index数とsections数が不一致' };
   }
   return { pass: true };

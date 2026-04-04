@@ -146,7 +146,7 @@ export async function runRouteWriter(briefingWeek) {
         navigation: { related_route_id: null, related_area: null, source_url: null },
         tags: article.tags,
         selected_theme: article.selected_theme,
-        tone_score: article.tone_score,
+        tone_score: Math.min(5, Math.max(1, parseInt(article.tone_score) || 4)),
         tone_notes: article.tone_notes,
         layer1_result: 'pending',
         status: 'pending',

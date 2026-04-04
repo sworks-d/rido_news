@@ -11,17 +11,32 @@ const WEBHOOKS = {
   status: process.env.DISCORD_WEBHOOK_STATUS,
 };
 
+const AVATARS = {
+  giren:    process.env.AVATAR_GIREN,
+  bright:   process.env.AVATAR_BRIGHT,
+  astonage: process.env.AVATAR_ASTONAGE,
+  bask:     process.env.AVATAR_BASK,
+  kai:      process.env.AVATAR_KAI,
+  aina:     process.env.AVATAR_AINA,
+  gato:     process.env.AVATAR_GATO,
+  amuro:    process.env.AVATAR_AMURO,
+  shiro:    process.env.AVATAR_SHIRO,
+  kou:      process.env.AVATAR_KOU,
+  char:     process.env.AVATAR_CHAR,
+  mirai:    process.env.AVATAR_MIRAI,
+};
+
 // ============================================
-// 基本送信
+// 基本送信（Webhook）
 // ============================================
-export async function sendDiscord(channelKey, message, username = null, avatarUrl = null) {
-  const webhookUrl = WEBHOOKS[channelKey];
-  if (!webhookUrl) return;
+export async function sendDiscord(channelKey, content, username = null, avatarKey = null) {
+  const url = WEBHOOKS[channelKey];
+  if (!url) return;
   try {
-    const body = { content: message };
+    const body = { content };
     if (username) body.username = username;
-    if (avatarUrl) body.avatar_url = avatarUrl;
-    const res = await fetch(webhookUrl, {
+    if (avatarKey && AVATARS[avatarKey]) body.avatar_url = AVATARS[avatarKey];
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -32,18 +47,11 @@ export async function sendDiscord(channelKey, message, username = null, avatarUr
   }
 }
 
-// キャラクター別送信（アバター付き）
-async function sendAsChar(channelKey, message, charKey) {
-  const char = CHAR_PROFILES[charKey];
-  if (!char) return sendDiscord(channelKey, message);
-  await sendDiscord(channelKey, message, char.username, char.avatar);
-}
-
 // ============================================
 // ユーティリティ
 // ============================================
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function fmt(icon, name, message) { return `${icon} **${name}**\n${message}`; }
+function fmt(icon, message) { return `${icon} ${message}`; }
 function jstHour() { return new Date(Date.now() + 9 * 60 * 60 * 1000).getUTCHours(); }
 function jstDay() { return new Date(Date.now() + 9 * 60 * 60 * 1000).getUTCDay(); }
 function isMonday() { return jstDay() === 1; }
@@ -65,7 +73,7 @@ export async function notifyStartup() {
     `あえて言おう、今日も高品質な記事を届けると！ 諸君の力を信じている。`,
     `作戦開始だ。ライダーたちが走り出す前に、最高の情報を届けるのだ。`,
   ];
-  await sendAsChar('status', pick(lines), 'giren');
+  await sendDiscord('status', fmt('🎖️', pick(lines)), 'ギレン・ザビ【参謀】', 'giren');
 }
 
 export async function notifyShutdown() {
@@ -74,7 +82,7 @@ export async function notifyShutdown() {
     `今日の任務、完了だ。ライダーたちへの届け物は果たした。`,
     `撤退ではない。次の作戦への準備だ。諸君、休息せよ。`,
   ];
-  await sendAsChar('status', pick(lines), 'giren');
+  await sendDiscord('status', fmt('🎖️', pick(lines)), 'ギレン・ザビ【参謀】', 'giren');
 }
 
 // ============================================
@@ -94,7 +102,7 @@ export async function notifyPipelineStart(hour) {
     `${hour}時だ。手を抜くな。ライダーたちは常に最高の情報を求めている。`,
     `${hour}時のサイクル開始。粛々と任務を遂行せよ。`,
   ];
-  await sendAsChar('status', pick(lines), 'bright');
+  await sendDiscord('status', fmt('⚓', pick(lines)), 'ブライト・ノア【艦長】', 'bright');
 }
 
 export async function notifyPipelineComplete(hour, stats) {
@@ -120,9 +128,7 @@ export async function notifyPipelineComplete(hour, stats) {
     `完璧ではないが、及第点だ。次のサイクルも頼む。`,
   ]);
 
-  await sendAsChar('status',
-    `${hour}時のサイクル完了。報告する。\n${summary}\n${comment}`
-  ));
+  await sendDiscord('status', fmt('⚓', `${hour}時のサイクル完了。報告する。\n${summary}\n${comment}`), 'ブライト・ノア【艦長】', 'bright');
 }
 
 // ============================================
@@ -147,7 +153,7 @@ export async function reportRssCollector(stats) {
     `今日はきつかったぞ。${passed}件。\n質の低いネタは弾いた結果がこれだ。量より質、そういうことだ。`,
   ];
 
-  await sendAsChar('daily', pick(lines), 'kai');
+  await sendDiscord('daily', fmt('📡', pick(lines)), 'カイ・シデン【rss_collector】', 'kai');
 }
 
 // アイナ・サハリン（route_collector）
@@ -163,7 +169,7 @@ export async function reportRouteCollector(stats) {
     `今週は${stored}件です。少ないですが、質は確かです。\nシローならきっと……いい記事にしてくれるはずです。`,
   ];
 
-  await sendAsChar('daily', pick(lines), 'aina');
+  await sendDiscord('daily', fmt('🗺️', pick(lines)), 'アイナ・サハリン【route_collector】', 'aina');
 }
 
 // アナベル・ガトー（spot_collector）
@@ -181,7 +187,7 @@ export async function reportSpotCollector(stats) {
     `${area}エリア、${stored}件確保した。\n……もっと取れると思ったが、質を優先した。これがデラーズの矜持だ。\nコウ・ウラキ、これを記事にしてみせろ。`,
   ];
 
-  await sendAsChar('daily', pick(lines), 'gato');
+  await sendDiscord('daily', fmt('💥', pick(lines)), 'アナベル・ガトー【spot_collector】', 'gato');
 }
 
 // アムロ・レイ（news_writer）
@@ -198,7 +204,7 @@ export async function reportNewsWriter(stats) {
     `${passed}本です。${rejected}本は僕自身が納得できなかったので除外しました。\n見える……もっとうまく書けるはずなのに。\nシャアさん、審査をお願いします。`,
   ];
 
-  await sendAsChar('daily', pick(lines), 'amuro');
+  await sendDiscord('daily', fmt('⚡', pick(lines)), 'アムロ・レイ【news_writer】', 'amuro');
 }
 
 // シロー・アマダ（route_writer）
@@ -214,7 +220,7 @@ export async function reportRouteWriter(stats) {
     `${passed}本です。${rejected}本は俺の判断で除外しました。\nアイナ、ごめん。全部使えなかった。\nでも残りは最高の記事にしたつもりだ。`,
   ];
 
-  await sendAsChar('daily', pick(lines), 'shiro');
+  await sendDiscord('daily', fmt('🏔️', pick(lines)), 'シロー・アマダ【route_writer】', 'shiro');
 }
 
 // コウ・ウラキ（spot_writer）
@@ -228,7 +234,7 @@ export async function reportSpotWriter(stats) {
     `${passed}本です！ ガトー大尉のデータを全部記事にしました。\n正直、大尉の目は確かだと思います。\nでも、僕だって同じくらいいいスポットを見つけられる。次は見てください。`,
   ];
 
-  await sendAsChar('daily', pick(lines), 'kou');
+  await sendDiscord('daily', fmt('🌄', pick(lines)), 'コウ・ウラキ【spot_writer】', 'kou');
 }
 
 // シャア・アズナブル（quality_checker）
@@ -248,7 +254,7 @@ export async function reportQualityChecker(stats) {
     `${base}\n差し戻し${pendingReview}本。基準は下げん。\nアムロ、これが私の答えだ。`,
   ];
 
-  await sendAsChar('daily', pick(lines), 'char');
+  await sendDiscord('daily', fmt('🔴', pick(lines)), 'シャア・アズナブル【quality_checker】', 'char');
 }
 
 // ミライ・ヤシマ（scheduler）
@@ -264,7 +270,7 @@ export async function reportScheduler(stats) {
     `${published}本の配信です。${todayArea}エリア向け。\n……もっと届けたかったですが、バランスを優先しました。\nブライト艦長、報告以上です。`,
   ];
 
-  await sendAsChar('daily', pick(lines), 'mirai');
+  await sendDiscord('daily', fmt('🧭', pick(lines)), 'ミライ・ヤシマ【scheduler】', 'mirai');
 }
 
 // ============================================
@@ -280,9 +286,7 @@ export async function notifyLayer1(title, reason, sourceUrl = null) {
   const detail = [`タイトル: ${title?.slice(0, 40)}`, `理由: ${reason}`];
   if (sourceUrl) detail.push(`ソース: ${sourceUrl}`);
   detail.push(`\n承認待ちキューへ移した。確認してくれたまえ。`);
-  await sendAsChar('alert',
-    `${pick(lines)}\n${detail.join('\n')}`
-  ));
+  await sendDiscord('alert', fmt('🔴', `${pick(lines)}\n${detail.join('\n')}`), 'シャア・アズナブル【quality_checker】', 'char');
 }
 
 export async function notifyAgentError(agent, errorMsg) {
@@ -291,9 +295,7 @@ export async function notifyAgentError(agent, errorMsg) {
     `${agent}、ダウンを確認。\n地球至上主義（安定稼働）への反逆は許さん。即座に復旧せよ。`,
     `${agent}が止まった。\nこの程度で止まるとは……。復旧を急げ、待つ時間はない。`,
   ];
-  await sendAsChar('alert',
-    `${pick(lines)}\n${errorMsg?.slice(0, 200)}`
-  ));
+  await sendDiscord('alert', fmt('👁️', `${pick(lines)}\n${errorMsg?.slice(0, 200)}`), 'バスク・オム【監視AG】', 'bask');
 }
 
 export async function notifyFallback(agent, reason) {
@@ -302,9 +304,7 @@ export async function notifyFallback(agent, reason) {
     `[${agent}]、フォールバックモードに移行した。\n想定内だ。粛々と継続せよ。`,
     `[${agent}]からフォールバックの報告。\n……許容範囲だ。ただし繰り返すな。`,
   ];
-  await sendAsChar('alert',
-    `${pick(lines)}\n${reason}`
-  ));
+  await sendDiscord('alert', fmt('👁️', `${pick(lines)}\n${reason}`), 'バスク・オム【監視AG】', 'bask');
 }
 
 // ============================================
@@ -332,9 +332,7 @@ export async function notifyDailyReport(stats) {
     `問題なし。ライダーたちへの届け物は果たした。`,
   ]);
 
-  await sendAsChar('daily',
-    `${dateStr}の作戦、終了だ。報告する。\n\n${summary}\n\n${comment}`
-  ));
+  await sendDiscord('daily', fmt('🎖️', `${dateStr}の作戦、終了だ。報告する。\n\n${summary}\n\n${comment}`), 'ギレン・ザビ【参謀】', 'giren');
 }
 
 export async function notifyWeeklyReport(stats, briefingWeek) {
@@ -357,9 +355,7 @@ export async function notifyWeeklyReport(stats, briefingWeek) {
     ? `\n💡 来週の提案: ${stats.nextWeekSuggestion}\n→ 承認 / 却下 / 修正を求む。`
     : '';
 
-  await sendAsChar('briefing',
-    `${briefingWeek}の作戦報告だ。諸君、よく聞け。\n\n${summary}${suggestion}\n\n${closing}`
-  ));
+  await sendDiscord('briefing', fmt('🎖️', `${briefingWeek}の作戦報告だ。諸君、よく聞け。\n\n${summary}${suggestion}\n\n${closing}`), 'ギレン・ザビ【参謀】', 'giren');
 }
 
 export async function notifyBriefingDistributed(briefingWeek, message) {
@@ -368,9 +364,7 @@ export async function notifyBriefingDistributed(briefingWeek, message) {
     `全エージェントに告ぐ。今週の作戦方針だ。`,
     `あえて言おう、今週の方針を伝えると！`,
   ];
-  await sendAsChar('briefing',
-    `${pick(openings)}\n\n${message}\n\n立てよ、エージェント！ 勝利は我らの中にある！`
-  ));
+  await sendDiscord('briefing', fmt('🎖️', `${pick(openings)}\n\n${message}\n\n立てよ、エージェント！ 勝利は我らの中にある！`), 'ギレン・ザビ【参謀】', 'giren');
 }
 
 export async function notifySkillsUpdated(file, problem) {
@@ -379,5 +373,5 @@ export async function notifySkillsUpdated(file, problem) {
     `${file}、直してやったぞ。\n${problem}、こういうのは早めに言ってくれ。\nアムロ、無理な生成はさせるなよ！`,
     `修正完了だ。${file}。\n${problem}……なるほどな。次は起きないようにしといた。\nちゃんと動くはずだ。確認してくれ。`,
   ];
-  await sendAsChar('status', pick(lines), 'astonage');
+  await sendDiscord('status', fmt('🔧', pick(lines)), 'アストナージ・メドッソ【整備士】', 'astonage');
 }

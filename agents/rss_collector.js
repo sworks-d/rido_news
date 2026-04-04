@@ -112,7 +112,7 @@ function parseRSS(xml) {
   while ((match = itemRegex.exec(xml)) !== null) {
     const itemXml = match[1];
     const get = (tag) => {
-      const m = itemXml.match(new RegExp(`<${tag}[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/${tag}>`, 'i'));
+      const m = itemXml.match(new RegExp('<' + tag + '[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/' + tag + '>', 'i'));
       return m ? m[1].trim() : '';
     };
 

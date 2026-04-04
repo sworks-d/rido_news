@@ -174,7 +174,7 @@ export async function runSpotWriter(briefingWeek) {
         navigation: { related_route_id: null, related_area: area, source_url: null },
         tags: article.tags,
         selected_theme: article.selected_theme,
-        tone_score: article.tone_score,
+        tone_score: Math.min(5, Math.max(1, parseInt(article.tone_score) || 4)),
         tone_notes: article.tone_notes,
         area,
         thumbnail_url: raw.thumbnail_url || null,
