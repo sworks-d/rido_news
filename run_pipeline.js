@@ -10,6 +10,7 @@ import { runSpotCollector } from './agents/spot_collector.js';
 import { runRouteWriter } from './agents/route_writer.js';
 import { runSpotWriter } from './agents/spot_writer.js';
 import { runScheduler } from './agents/scheduler.js';
+import { runLegalChecker } from './agents/legal_checker.js';
 import { notifyPipelineStart, notifyPipelineComplete, notifyAgentError } from './utils/discord.js';
 import { createClient } from '@supabase/supabase-js';
 
@@ -59,6 +60,10 @@ try {
   console.log('🔴 品質チェック...');
   stats.quality = await runQualityChecker(week);
   console.log('✅ 品質チェック完了:', stats.quality);
+
+  console.log('⚖️  リーガルチェック...');
+  stats.legal = await runLegalChecker(week);
+  console.log('✅ リーガルチェック完了:', stats.legal);
 
   console.log('📤 配信...');
   stats.scheduler = await runScheduler(week);

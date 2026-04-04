@@ -21,12 +21,16 @@ const supabase = createClient(
 function checkTextSimilarity(article, raw) {
   if (!raw?.body) return { pass: true };
   const body = raw.body;
-  const articleText = JSON.stringify(article.sections);
+
+  // 引用元section（link_type: external）を除いた本文のみチェック
+  const contentSections = (article.sections || []).filter(s => s.link_type !== 'external');
+  const articleText = contentSections.map(s => s.body || '').join(' ');
 
   for (let i = 0; i < body.length - 14; i++) {
     const phrase = body.slice(i, i + 15);
-    // 数字・記号のみのフレーズはスキップ
+    // 数字・記号・URLのみのフレーズはスキップ
     if (/^[\d\s\.,、。・「」【】\-]+$/.test(phrase)) continue;
+    if (/^https?:\/\//.test(phrase)) continue;
     if (articleText.includes(phrase)) {
       return {
         pass: false,
@@ -131,7 +135,7 @@ export async function runLegalChecker(briefingWeek) {
     .eq('status', 'approved')
     .eq('tab', 'bike_news')
     .eq('briefing_week', briefingWeek)
-    .is('layer1_result', null)  // legal未チェックのもの
+    .eq('layer1_result', 'pass')  // quality_checker通過済み・legal未チェック
     .limit(50);
 
   if (error) throw error;
