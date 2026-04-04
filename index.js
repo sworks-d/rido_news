@@ -13,6 +13,8 @@ import {
 import { runRssCollector } from './agents/rss_collector.js';
 import { runNewsWriter } from './agents/news_writer.js';
 import { runQualityChecker } from './agents/quality_checker.js';
+import { runLegalChecker } from './agents/legal_checker.js';
+import { publishArticle, getPendingArticles } from './agents/scheduler.js';
 import { runRouteCollector } from './agents/route_collector.js';
 import { runSpotCollector } from './agents/spot_collector.js';
 import { runRouteWriter } from './agents/route_writer.js';
@@ -189,6 +191,9 @@ async function mainLoop() {
       // 品質フェーズ
       stats.quality = await runQualityChecker(week);
 
+      // リーガルフェーズ（バイクニュースのみ）
+      stats.legal = await runLegalChecker(week);
+
       // 配信フェーズ
       stats.scheduler = await runScheduler(week);
 
@@ -230,6 +235,122 @@ async function mainLoop() {
 // ============================================
 // 起動
 // ============================================
+// ============================================
+// Discordコマンド受信
+// ============================================
+discord.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  const content_msg = message.content.trim();
+  const args = content_msg.split(' ');
+  const command = args[0];
+
+  // !approve [id]
+  if (command === '!approve' && args[1]) {
+    const articleId = args[1];
+    try {
+      await publishArticle(articleId);
+      await sendDiscord('status', `✅ 承認・配信しました: ${articleId}`);
+    } catch (err) {
+      await sendDiscord('alert', `❌ 承認失敗: ${err.message}`);
+    }
+  }
+
+  // !reject [id]
+  if (command === '!reject' && args[1]) {
+    const articleId = args[1];
+    try {
+      await supabase.from('news_articles')
+        .update({ status: 'rejected' })
+        .eq('id', articleId);
+      await supabase.from('news_raw')
+        .update({ status: 'error' })
+        .eq('id', articleId);
+      await sendDiscord('status', `🗑️ 却下しました: ${articleId}`);
+    } catch (err) {
+      await sendDiscord('alert', `❌ 却下失敗: ${err.message}`);
+    }
+  }
+
+  // !revise [id] [理由]
+  if (command === '!revise' && args[1]) {
+    const articleId = args[1];
+    const reason = args.slice(2).join(' ') || '再生成を依頼';
+    try {
+      await supabase.from('news_articles')
+        .update({ status: 'pending', layer1_result: `revise: ${reason}` })
+        .eq('id', articleId);
+      await sendDiscord('status', `🔄 修正依頼しました: ${articleId}
+理由: ${reason}`);
+    } catch (err) {
+      await sendDiscord('alert', `❌ 修正依頼失敗: ${err.message}`);
+    }
+  }
+
+  // !list → 承認待ち一覧
+  if (command === '!list') {
+    try {
+      const articles = await getPendingArticles();
+      if (articles.length === 0) {
+        await sendDiscord('status', '📋 承認待ち記事はありません。');
+        return;
+      }
+      const list = articles.map((a, i) =>
+        `${i+1}. [${a.tab}] ${a.title?.slice(0, 25)}
+   ID: \`${a.id}\` / スコア: ${a.tone_score}`
+      ).join('
+');
+      await sendDiscord('status', `📋 **承認待ち記事 ${articles.length}件**
+
+${list}
+
+承認: !approve [ID] / 却下: !reject [ID] / 修正: !revise [ID] [理由]`);
+    } catch (err) {
+      await sendDiscord('alert', `❌ 一覧取得失敗: ${err.message}`);
+    }
+  }
+
+  // !run → 今すぐパイプライン実行
+  if (command === '!run') {
+    await sendDiscord('status', '⚙️ パイプラインを手動実行します...');
+    const week = getCurrentBriefingWeek();
+    try {
+      const stats = {};
+      stats.rss = await runRssCollector(week);
+      stats.route = await runRouteCollector(week, null);
+      stats.spot = await runSpotCollector(week, null);
+      stats.news = await runNewsWriter(week);
+      stats.routeWrite = await runRouteWriter(week);
+      stats.spotWrite = await runSpotWriter(week);
+      stats.quality = await runQualityChecker(week);
+      stats.legal = await runLegalChecker(week);
+      stats.scheduler = await runScheduler(week);
+      await notifyPipelineComplete('手動', stats);
+    } catch (err) {
+      await notifyAgentError('pipeline', err.message);
+    }
+  }
+
+  // !status → 各エージェントの状態
+  if (command === '!status') {
+    try {
+      const { data } = await supabase
+        .from('agent_status')
+        .select('agent, status, last_run_at, last_count, note')
+        .order('agent');
+      const list = (data || []).map(a =>
+        `${a.status === 'done' ? '✅' : a.status === 'error' ? '❌' : '⏳'} ${a.agent}: ${a.note || a.status}`
+      ).join('
+');
+      await sendDiscord('status', `📊 **エージェント状態**
+
+${list}`);
+    } catch (err) {
+      await sendDiscord('alert', `❌ 状態取得失敗: ${err.message}`);
+    }
+  }
+});
+
 discord.once('clientReady', async () => {
   console.log(`✅ RIDO News Agent起動完了: ${discord.user.tag}`);
   await notifyStartup();

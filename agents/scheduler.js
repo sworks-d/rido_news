@@ -72,9 +72,9 @@ async function fetchApprovedArticles(briefingWeek) {
 }
 
 // ============================================
-// 配信実行
+// 配信実行（人間承認後に呼ばれる）
 // ============================================
-async function publishArticle(article) {
+export async function publishArticle(articleId) {
   const { error } = await supabase
     .from('news_articles')
     .update({
@@ -82,9 +82,21 @@ async function publishArticle(article) {
       published_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq('id', article.id);
+    .eq('id', articleId);
 
   if (error) throw error;
+}
+
+// 承認待ちリスト取得
+export async function getPendingArticles() {
+  const { data } = await supabase
+    .from('news_articles')
+    .select('id, title, tab, tone_score, source_name, created_at')
+    .eq('status', 'approved')
+    .eq('layer1_result', 'legal_passed')
+    .order('created_at', { ascending: true })
+    .limit(10);
+  return data || [];
 }
 
 // ============================================
@@ -153,11 +165,10 @@ export async function runScheduler(briefingWeek) {
         }
       }
 
-      // 配信実行
-      await publishArticle(article);
+      // 承認依頼をDiscordに送る（自動公開しない）
       published++;
       if (tab && publishedByTab[tab] !== undefined) publishedByTab[tab]++;
-      console.log(`[scheduler] 配信: ${article.title?.slice(0, 30)}`);
+      console.log(`[scheduler] 承認依頼: ${article.title?.slice(0, 30)}`);
 
       // 少し待つ
       await new Promise(r => setTimeout(r, 200));
