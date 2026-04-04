@@ -44,13 +44,64 @@ async function fetchRawArticles(briefingWeek) {
 // ============================================
 // ジャンル判定
 // ============================================
+const GENRE_IMAGE_MAP = {
+  'new_model_sport':  'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/new_model_sport.jpg',
+  'new_model_tour':   'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/new_model_tour.jpg',
+  'recall':           'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/recall.jpg',
+  'motorsports':      'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/motorsports.jpg',
+  'event':            'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/event.jpg',
+  'regulation':       'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/regulation.jpg',
+  'ev_tech':          'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/ev_tech.jpg',
+  'bike_news':        'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/bike_news.jpg',
+};
+
+// general系はbike_newsのローテーション
+const GENERAL_IMAGES = [
+  'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/general2.jpg',
+  'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/general3.jpg',
+  'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/general4.jpg',
+  'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/general5.jpg',
+  'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/general6.jpg',
+  'https://raw.githubusercontent.com/sworks-d/rido_news/main/rido_news_default/general7.jpg',
+];
+
 function detectGenre(title, body) {
   const text = `${title} ${body}`.toLowerCase();
-  if (/新型|発売|デビュー|価格|受注|ニューモデル|new model|launch|release/.test(text)) return 'new_model';
-  if (/道交法|改正|規制|罰則|免許|法律|rule|regulation|law/.test(text)) return 'regulation';
-  if (/イベント|モーターショー|展示会|試乗会|event|show|expo/.test(text)) return 'event';
-  if (/motogp|wsbk|全日本|レース|gp|race|superbike/.test(text)) return 'motorsports';
+
+  // リコール（最優先・他と区別が必要）
+  if (/リコール|回収|不具合|recall|defect/.test(text)) return 'recall';
+
+  // EV・新技術
+  if (/ev|電動|electric|ハイブリッド|hybrid|水素|fuel.cell/.test(text)) return 'ev_tech';
+
+  // レース・motorsports
+  if (/motogp|wsbk|全日本|レース|gp|race|superbike|moto2|moto3/.test(text)) return 'motorsports';
+
+  // イベント
+  if (/イベント|モーターショー|展示会|試乗会|event|show|expo|ショー/.test(text)) return 'event';
+
+  // 法規制
+  if (/道交法|改正|規制|罰則|免許|法律|rule|regulation|law|排ガス|euro/.test(text)) return 'regulation';
+
+  // 新型モデル（スポーツ系）
+  if (/(?:新型|新発売|デビュー|launch|new model|release).*(?:ss|スーパースポーツ|ネイキッド|naked|スポーツ|ninja|cbr|yzf|gsx-r|zx)/i.test(text)) return 'new_model_sport';
+
+  // 新型モデル（ツアラー系）
+  if (/(?:新型|新発売|デビュー|launch|new model|release).*(?:ツアラー|アドベンチャー|adventure|tourer|touring|gs|africa|transalp|versys)/i.test(text)) return 'new_model_tour';
+
+  // 新型モデル（汎用）→ スポーツかツアーか判断できない場合
+  if (/新型|新発売|ニューモデル|モデルチェンジ|new model|launch|release|発売|受注/.test(text)) return 'new_model_sport';
+
   return 'bike_news';
+}
+
+function getThumbnailUrl(genre) {
+  if (genre === 'bike_news') {
+    // generalをランダムローテーション
+    const all = [GENRE_IMAGE_MAP['bike_news'], ...GENERAL_IMAGES];
+    return all[Math.floor(Math.random() * all.length)];
+  }
+  return GENRE_IMAGE_MAP[genre] || GENRE_IMAGE_MAP['bike_news'];
 }
 
 // ============================================
@@ -199,6 +250,7 @@ export async function runNewsWriter(briefingWeek) {
 
       // news_articlesに格納
       const genre = detectGenre(raw.title, raw.body || '');
+      const thumbnailUrl = getThumbnailUrl(genre);
       const { error } = await supabase.from('news_articles').insert({
         raw_id: raw.id,
         source_type: 'external_rss',
@@ -216,7 +268,7 @@ export async function runNewsWriter(briefingWeek) {
         tone_notes: article.tone_notes,
         source_url: raw.source_url,
         source_name: raw.source_name,
-        thumbnail_url: raw.thumbnail_url || null,
+        thumbnail_url: thumbnailUrl,
         layer1_result: 'pending',
         status: 'pending',
         briefing_week: briefingWeek,
