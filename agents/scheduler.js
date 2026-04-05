@@ -102,6 +102,29 @@ export async function getPendingArticles() {
 // ============================================
 // メイン実行
 // ============================================
+// ============================================
+// バイクニュース記事の有効期限チェック（2ヶ月）
+// ============================================
+export async function expireOldArticles() {
+  const twoMonthsAgo = new Date();
+  twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+
+  const { data, error } = await supabase
+    .from('news_articles')
+    .update({ status: 'rejected', updated_at: new Date().toISOString() })
+    .eq('tab', 'bike_news')
+    .eq('status', 'published')
+    .lt('published_at', twoMonthsAgo.toISOString());
+
+  if (error) {
+    console.error('[scheduler] 有効期限処理エラー:', error.message);
+    return 0;
+  }
+  const count = data?.length || 0;
+  if (count > 0) console.log(`[scheduler] ${count}件のバイクニュースを期限切れに`);
+  return count;
+}
+
 export async function runScheduler(briefingWeek) {
   console.log('[scheduler] 開始');
 

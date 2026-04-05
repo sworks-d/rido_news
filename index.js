@@ -166,6 +166,9 @@ async function mainLoop() {
       stats.quality = await runQualityChecker(week);
       stats.legal = await runLegalChecker(week);
 
+      // 有効期限チェック
+      await expireOldArticles();
+
       // 配信フェーズ
       stats.scheduler = await runScheduler(week);
 
