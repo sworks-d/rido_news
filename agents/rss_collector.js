@@ -186,7 +186,9 @@ export async function runRssCollector(briefingWeek) {
       console.log(`[rss_collector] ${source.name} 収集中...`);
       const xml = await fetchRSS(source);
       const items = parseRSS(xml);
-      const filtered = filterItems(items.slice(0, 20), source);
+      // 英語ソースは1ソースあたり最大5件・国内は20件
+      const limit = source.lang === 'en' ? 5 : 20;
+      const filtered = filterItems(items.slice(0, limit), source);
       totalFetched += items.length;
 
       for (const item of filtered) {

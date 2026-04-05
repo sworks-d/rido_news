@@ -120,14 +120,16 @@ export async function runScheduler(briefingWeek) {
   const publishedByTab = { bike_news: 0, route: 0, spot: 0 };
 
   // 優先順位でソート
-  // 1. genre=urgent 2. app_db（ルート・スポット） 3. external_rss（バイクニュース） 4. pr
+  // 1. urgent 2. app_db 3. external_rss国内/high 4. external_rss unknown 5. external_rss low 6. pr
   const sorted = [...articles].sort((a, b) => {
     const priority = (item) => {
       if (item.genre === 'urgent') return 0;
       if (item.source_type === 'app_db') return 1;
-      if (item.source_type === 'external_rss') return 2;
-      if (item.tab === 'pr') return 3;
-      return 4;
+      if (item.source_type === 'external_rss' && item.jp_relevance === 'high') return 2;
+      if (item.source_type === 'external_rss' && item.jp_relevance === 'unknown') return 3;
+      if (item.source_type === 'external_rss' && item.jp_relevance === 'low') return 4;
+      if (item.tab === 'pr') return 5;
+      return 6;
     };
     return priority(a) - priority(b);
   });
